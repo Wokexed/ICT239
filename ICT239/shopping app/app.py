@@ -14,7 +14,7 @@ items = [
         "item_description": "A ruled notebook, perfect for school or work.",
         "inventory_quantity": 10,
         "price": 5.50,
-        "image_url": "/static/images/notebook.jpg"
+        "image_url": "https://static.platform.michaels.com/2c-prd/en_US/4611909929747519792.jpeg"
     },
     {
         "item_id": 2,
@@ -22,7 +22,7 @@ items = [
         "item_description": "Blue ink ballpoint pen with smooth writing.",
         "inventory_quantity": 25,
         "price": 2.00,
-        "image_url": "/static/images/pen.jpg"
+        "image_url": "https://tiimg.tistatic.com/fp/1/007/680/very-smooth-small-rotating-cello-blue-ball-pen-with-fine-grip-602.jpg"
     },
     {
         "item_id": 3,
@@ -30,7 +30,7 @@ items = [
         "item_description": "Durable canvas backpack for everyday use.",
         "inventory_quantity": 5,
         "price": 35.00,
-        "image_url": "/static/images/backpack.jpg"
+        "image_url": "https://m.media-amazon.com/images/I/813WffuRx+L._UY1000_.jpg"
     },
     {
         "item_id": 4,
@@ -38,7 +38,7 @@ items = [
         "item_description": "Insulated water bottle keeps drinks cold or hot.",
         "inventory_quantity": 15,
         "price": 12.00,
-        "image_url": "/static/images/water_bottle.jpg"
+        "image_url": "https://m.media-amazon.com/images/I/51yGqnrBYqL._UF894,1000_QL80_.jpg"
     },
     {
         "item_id": 5,
@@ -46,7 +46,7 @@ items = [
         "item_description": "Over-ear headphones with noise cancellation.",
         "inventory_quantity": 8,
         "price": 60.00,
-        "image_url": "/static/images/headphones.jpg"
+        "image_url": "https://m.media-amazon.com/images/I/713SMXPRweL._UF894,1000_QL80_.jpg"
     }
 ]
 
