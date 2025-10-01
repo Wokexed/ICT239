@@ -1,9 +1,10 @@
 from wtforms import Form, StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from flask_wtf import FlaskForm
+from flask_login import UserMixin
 # from flask_sqlalchemy import SQLAlchemy
 # from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from app import db, login_manager
 
 class Item(db.Document):
     meta = {'collection': 'items'}
@@ -47,17 +48,44 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message="Passwords must match")])
     submit = SubmitField('Register')
 
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String(20), unique=True, nullable=False)
-#     email = db.Column(db.String(254), unique=True, nullable=False)
-#     password_hash = db.Column(db.String(128), nullable=False)
+class User(db.Document, UserMixin):
+    meta = {'collection': 'users'} 
+    username = db.StringField(required=True, unique=True, max_length=20)
+    email = db.StringField(required=True, unique=True, max_length=120)
+    password_hash = db.StringField(required=True)
 
-#     def set_password(self, password):
-#         self.password_hash = generate_password_hash(password)
-
-#     def check_password(self, password):
-#         return check_password_hash(self.password_hash, password)
+    @staticmethod
+    def find_by_username(username):
+        return User.objects(username=username).first()
     
+    @staticmethod
+    def find_by_email(email):
+        return User.objects(email=email).first()
+    
+    @staticmethod
+    def create_user(username, email, password_hash):
+        user = User(
+            username=username,
+            email=email,
+            password_hash=password_hash
+        )
+        user.save()
+        return user
+    
+    @staticmethod
+    def get_user_by_id(user_id):
+        return User.objects(id=user_id).first()
+    
+    @staticmethod
+    def check_user_credentials(username, password_hash):
+        user = User.find_by_username(username)
+        if user and user.password_hash == password_hash:
+            return user
+        return None
+    
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_user_by_id(user_id)
+
 def __repr__(self):
     return f"<User {self.username}>"

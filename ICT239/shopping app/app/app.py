@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from app.model import LoginForm, RegistrationForm, Item
+from app.model import LoginForm, RegistrationForm, Item, User
 from flask import flash
 # from flask_mongoengine import MongoEngine
 from app import app, db
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 @app.route("/")
 def home():
@@ -108,27 +109,38 @@ def checkout():
     session.pop("cart", None)  # clear cart after checkout
     return render_template("checkout.html")
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        # ✅ Here you would normally save user data to your database
-        flash(f"Account created for {form.username.data}!", "success")
-        return redirect(url_for("login"))  # Redirect to login page after successful registration
-    return render_template("registration.html", form=form)
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         form = LoginForm()
         return render_template("login.html", form=form)
     else:
-        username = request.form.get("username")
-        password = request.form.get("password")
-        return redirect(url_for("shop"))
+        username = request.form["username"]
+        password = request.form["password"]
+        user = User.check_user_credentials(username, password)
+        if user:
+            login_user(user)
+            flash("Logged in successfully.", "success")
+            return redirect(url_for("shop"))
+        else:
+            flash("Invalid username or password.", "danger")
+            return redirect(url_for("login"))
 
-    
-    
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegistrationForm()
+    if request.method == "GET":
+        return render_template("registration.html", form=form)
+    if request.method == "POST" and form.validate_on_submit():
+        username = request.form["username"]
+        email = request.form["email"]
+        password = request.form["password"]
+
+        User.create_user(username, email, password)
+        flash("Account created successfully! Please log in.", "success")
+        return redirect(url_for("login"))
+    return render_template("registration.html", form=form)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

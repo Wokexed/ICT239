@@ -2,11 +2,12 @@
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
+from flask_login import LoginManager
 
 def create_app():
     app = Flask(__name__)
     # app.secret_key = "your_secret_key"
-    app.config["SECRET_KEY"] = "your_secret_key"
+    app.config["SECRET_KEY"] = "1c31274a526e7db696122ffea8a95f76"
 
     app.config["MONGODB_SETTINGS"] = {
         "db": "shopping_app_db",
@@ -15,6 +16,9 @@ def create_app():
     }
 
     db = MongoEngine(app)
-    return app, db
+    login_manager = LoginManager()
+    login_manager.init_app(app)
 
-app, db = create_app()
+    return app, db, login_manager
+
+app, db, login_manager = create_app()
