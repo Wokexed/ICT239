@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method ="POST">
+    {{ form.hidden_tag() }}
+    {{ form.title.label }} {{ form.title(size=32) }}<br>
+    {{ form.description.label }} {{ form.description(size=64) }}<br>
+    {{ form.start_date.label }} {{ form.start_date() }}<br>
+    {{ form.due_date.label }} {{ form.due_date() }}<br>
+    {{ form.priority.label }} {{ form.priority() }}<br>
+    <input type="submit" value="Go">
+</form>
+
+{% endblock %}
