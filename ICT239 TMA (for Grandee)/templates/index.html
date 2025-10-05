@@ -15,13 +15,12 @@
     <!-- Category Filter -->
     <div class="category-filter">
         <label for="categoryFilter" style="margin: 0;">Category:</label>
-        <select id="categoryFilter" class="form-select" style="width: 150px;">
+        <select id="categoryFilter" class="form-select">
             <option value="All">All</option>
             <option value="Children">Children</option>
             <option value="Teens">Teens</option>
             <option value="Adult">Adult</option>
-        </select>
-        <button class="btn btn-success" onclick="filterBooks()">Search</button>
+        </select><button class="btn btn-success" onclick="filterBooks()">Search</button>
     </div>
 </div>
 
@@ -41,27 +40,49 @@
                 <div class="book-title">{{ book.title }}</div>
                 <div class="book-author">By {{ book.author if book.author else 'Unknown Author' }}</div>
                 
-                {% if book.category %}
+                {% if book.category or book.genre %}
                 <div class="book-category">
-                    <strong>Category:</strong> {{ book.category }}
+                    <normal>Category:</normal> 
+                    
+                    {% if book.category %}
+                        {{ book.category }}
+                    {% endif %}
+                    
+                    {% if book.category and book.genre %}
+                        , 
+                    {% endif %}
+                    
+                    {% if book.genre %}
+                        {{ book.genre }}
+                    {% endif %}
                 </div>
-                {% endif %}
                 
-                {% if book.genre %}
-                <div class="book-category">
-                    <strong>Genre:</strong> {{ book.genre }}
-                </div>
                 {% endif %}
-                
+                                
                 {% if book.pages %}
                 <div class="book-category">
-                    <strong>Pages:</strong> {{ book.pages }}
+                    <normal>Pages:</normal> {{ book.pages }}
                 </div>
                 {% endif %}
                 
                 <div class="book-description">
                     {% if book.description %}
-                        {{ book.description[:200] }}{% if book.description|length > 200 %}...{% endif %}
+                        
+                        {% set lines = book.description.strip().split('\n') | map('trim') | reject('equalto', '') | list %}
+                        
+                        {% if lines %}
+                            {{ lines[0] }}
+                            
+                            {% if lines|length > 1 %}
+                                <p></p>
+                                
+                                {{ lines[-1] }}
+                            {% endif %}
+                            
+                        {% else %}
+                            A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
+                        {% endif %}
+                        
                     {% else %}
                         A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
                     {% endif %}
