@@ -98,7 +98,15 @@ def shop_item_id(item_id):
 
     return render_template("item.html", item=item)
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("shop"))
+
 @app.route("/cart")
+@login_required
 def cart():
     cart = session.get("cart", [])
     final_total = sum(item["quantity"] * item["price"] for item in cart)

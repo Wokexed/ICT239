@@ -18,6 +18,7 @@ def create_app():
     db = MongoEngine(app)
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = "login"  # Redirect to 'login' view if not logged in 
 
     return app, db, login_manager
 
