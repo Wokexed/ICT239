@@ -3,22 +3,25 @@
 {% block title %}Book Titles - SG Library{% endblock %}
 
 {% block content %}
+<!-- Main page title header -->
 <div class="content-header">
     <h1>BOOK TITLES</h1>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <p style="margin: 0; color: #666;">Number of titles: {{ books|length }}</p>
-        
-        <!-- Category Filter -->
-        <div class="category-filter">
-            <label for="categoryFilter" style="margin: 0;">Category:</label>
-            <select id="categoryFilter" class="form-select" style="width: 150px;">
-                <option value="All">All</option>
-                <option value="Children">Children</option>
-                <option value="Teens">Teens</option>
-                <option value="Adult">Adult</option>
-            </select>
-            <button class="btn btn-success" onclick="filterBooks()">Search</button>
-        </div>
+</div>
+
+<!-- Filter and count header -->
+<div class="filter-header">
+    <p>Number of titles: <span id="bookCount">{{ books|length }}</span></p>
+    
+    <!-- Category Filter -->
+    <div class="category-filter">
+        <label for="categoryFilter" style="margin: 0;">Category:</label>
+        <select id="categoryFilter" class="form-select" style="width: 150px;">
+            <option value="All">All</option>
+            <option value="Children">Children</option>
+            <option value="Teens">Teens</option>
+            <option value="Adult">Adult</option>
+        </select>
+        <button class="btn btn-success" onclick="filterBooks()">Search</button>
     </div>
 </div>
 
@@ -26,7 +29,7 @@
 <div id="bookContainer">
     {% if books %}
         {% for book in books %}
-        <div class="book-card" data-category="{{ book.genre if book.genre else 'Adult' }}">
+        <div class="book-card" data-category="{{ book.category if book.category else 'Adult' }}">
             <!-- Book Cover -->
             <img src="{{ book.cover_image if book.cover_image else 'https://via.placeholder.com/120x180?text=No+Cover' }}" 
                  alt="{{ book.title }}" 
@@ -38,23 +41,37 @@
                 <div class="book-title">{{ book.title }}</div>
                 <div class="book-author">By {{ book.author if book.author else 'Unknown Author' }}</div>
                 
-                {% if book.genre %}
+                {% if book.category %}
                 <div class="book-category">
-                    <strong>Category:</strong> {{ book.genre }}
+                    <strong>Category:</strong> {{ book.category }}
                 </div>
                 {% endif %}
                 
-                {% if book.year_published %}
+                {% if book.genre %}
                 <div class="book-category">
-                    <strong>Pages:</strong> {{ book.year_published }}
+                    <strong>Genre:</strong> {{ book.genre }}
+                </div>
+                {% endif %}
+                
+                {% if book.pages %}
+                <div class="book-category">
+                    <strong>Pages:</strong> {{ book.pages }}
                 </div>
                 {% endif %}
                 
                 <div class="book-description">
-                    A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
+                    {% if book.description %}
+                        {{ book.description[:200] }}{% if book.description|length > 200 %}...{% endif %}
+                    {% else %}
+                        A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
+                    {% endif %}
                 </div>
                 
-                <button class="btn btn-more" onclick="alert('Login feature coming soon!')">More details</button>
+                {% if session.user_id %}
+                <a href="{{ url_for('book_details', book_id=book.id) }}" class="btn btn-more">More details</a>
+                {% else %}
+                <button class="btn btn-more" onclick="alert('Please log in to view book details')">More details</button>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -100,7 +117,7 @@ function filterBooks() {
     }
     
     // Update count
-    document.querySelector('.content-header p').textContent = `Number of titles: ${visibleCount}`;
+    document.getElementById('bookCount').textContent = visibleCount;
 }
 </script>
 {% endblock %}

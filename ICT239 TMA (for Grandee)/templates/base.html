@@ -18,39 +18,74 @@
         }
         
         .sidebar {
-            width: 200px;
-            background-color: #7a8a8c;
+            width: 300px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: url("https://library.suss.edu.sg/wp-content/uploads/2023/11/Study-Space_High-table-2-cropped-300x200.png");
+            background-size: cover;
+            background-position: left center;
+            background-repeat: no-repeat;
+            position: relative;
             color: white;
-            padding: 20px 0;
             flex-shrink: 0;
         }
         
-        .sidebar-header {
-            padding: 0 20px 20px 20px;
-            border-bottom: 2px solid white;
-            margin-bottom: 20px;
+        /* Overlay to darken image for readability */
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
         }
         
+        .sidebar-header {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            border-bottom: 2px solid white;
+        }
+        
+        /* "SG Library" banner */
         .sidebar-header h3 {
-            margin: 0;
+            margin: 10;
             font-size: 1.5rem;
             font-weight: normal;
+            color: white;
+            text-align: center;
         }
         
         .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
+            position: relative;
+            z-index: 1;
         }
         
         .sidebar-menu li {
-            padding: 12px 20px;
+            padding: 50px 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
         }
         
+        .icon-image {
+            /* Set the desired size for the icon to be inline with the text */
+            width: 30px;
+            height: 30px; 
+            margin-left: 40px;
+            /* vertical-align: middle; is not strictly needed here because Flexbox (align-items: center) is handling vertical alignment */
+        }
+
         .sidebar-menu li:hover,
         .sidebar-menu li.active {
             background-color: rgba(255, 255, 255, 0.1);
@@ -68,18 +103,34 @@
         }
         
         .content-header {
-            background-color: #d4e4d4;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 5px;
+            background-color: #bed1bf;
+            padding: 10px 20px;
+            margin-bottom: 5px;
+            margin-left: -20px;
+            margin-right: -20px;
+            margin-top: -25px;
         }
         
         .content-header h1 {
-            margin: 0 0 10px 0;
+            margin: 0;
             font-size: 1.8rem;
-            color: #333;
+            color: #0c0500;
         }
         
+        .filter-header {
+            background-color: #dfefdd;
+            padding: 0px 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-header p {
+            margin: 0;
+            color: #666;
+        }
+
         .book-card {
             background: white;
             border-radius: 8px;
@@ -163,12 +214,13 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-header">
+        <div class="sidebar-header banner">
             <h3>SG Library</h3>
         </div>
+
         <ul class="sidebar-menu">
             <li class="active">
-                <span>📚</span>
+                <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
                 <span>Book Titles</span>
             </li>
         </ul>
