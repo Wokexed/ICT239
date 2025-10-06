@@ -264,12 +264,11 @@
     <!-- Main Content -->
     <div class="main-content">
         <!-- User Info -->
-        {% if session.username %}
-        <div class="user-info">
-            Logged in as: <strong>{{ session.username }}</strong>
-            {% if session.is_admin %}(Admin){% endif %}
+        
+        <div class="content-header">
+            <h1>{% block page_title %}BOOK TITLES{% endblock %}</h1>
         </div>
-        {% endif %}
+    
         
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}

@@ -77,23 +77,23 @@ def book_details(book_id):
         flash('Book not found.', 'danger')
         return redirect(url_for('index'))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """User login page"""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     """User login page"""
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         password = request.form.get('password')
         
-        # Check if user exists and password matches
-        if username in users and users[username]['password'] == password:
-            session['username'] = username
-            session['is_admin'] = users[username]['is_admin']
-            flash(f'Welcome back, {username}!', 'success')
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid username or password.', 'danger')
+#         # Check if user exists and password matches
+#         if username in users and users[username]['password'] == password:
+#             session['username'] = username
+#             session['is_admin'] = users[username]['is_admin']
+#             flash(f'Welcome back, {username}!', 'success')
+#             return redirect(url_for('index'))
+#         else:
+#             flash('Invalid username or password.', 'danger')
     
-    return render_template('login.html')
+#     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
