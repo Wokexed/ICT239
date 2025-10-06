@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details - {{ book.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Basic styles for layout to match the image, you'll want to integrate this into your style.css */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex; /* Use flexbox for sidebar and main content layout */
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            background-color: #f8f9fa; /* Light grey background */
+        }
+        .sidebar {
+            width: 300px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: url("https://library.suss.edu.sg/wp-content/uploads/2023/11/Study-Space_High-table-2-cropped-300x200.png");
+            background-size: cover;
+            background-position: left center;
+            background-repeat: no-repeat;
+            position: relative;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 20px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Overlay to darken image for readability */
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+        
+        .sidebar-header {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            border-bottom: 2px solid white;
+            box-shadow: 0 20px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* "SG Library" banner */
+        .sidebar-header h3 {
+            margin: 10;
+            font-size: 1.5rem;
+            font-weight: normal;
+            color: white;
+            text-align: center;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .sidebar-menu li {
+            padding: 50px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
+        }
+        
+        .icon-image {
+            /* Set the desired size for the icon to be inline with the text */
+            width: 30px;
+            height: 30px; 
+            margin-left: 40px;
+            /* vertical-align: middle; is not strictly needed here because Flexbox (align-items: center) is handling vertical alignment */
+        }
+
+        .sidebar-menu li:hover,
+        .sidebar-menu li.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-menu li i {
+            width: 20px;
+        }
+        .main-content {
+            flex-grow: 1; /* Take up remaining space */
+            padding: 30px;
+            background-color: #e9ecef; /* Slightly darker than body background for content area */
+        }
+        .book-details-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 900px; /* Limit width for better readability */
+            margin: 0 auto; /* Center the container */
+            display: flex; /* Use flex for cover image and text details */
+            gap: 20px;
+        }
+        .book-cover {
+            flex-shrink: 0; /* Don't allow the cover to shrink */
+            width: 150px; /* Adjust size as needed */
+            height: 225px; /* Maintain aspect ratio (1.5x width) */
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .book-info-text {
+            flex-grow: 1; /* Allow text info to take remaining space */
+        }
+        .book-info-text h1 {
+            font-size: 1.8em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .book-info-text .author {
+            font-size: 1.1em;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .book-meta p {
+            margin: 5px 0;
+            color: #495057;
+        }
+        .book-meta span {
+            font-weight: bold;
+        }
+        .book-description {
+            margin-top: 25px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 25px;
+            line-height: 1.6;
+            color: #343a40;
+        }
+        .book-description p {
+            margin-bottom: 1em; /* Space between paragraphs */
+        }
+        .back-button {
+            display: block;
+            width: fit-content;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #28a745; /* Green button */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+        .category-genre-tags span:not(:last-child):after {
+            content: ", ";
+        }
+        .main-header {
+            font-size: 2em;
+            color: #343a40;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; /* Stack sidebar and main content */
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .book-details-container {
+                flex-direction: column; /* Stack cover and info vertically */
+                align-items: center;
+            }
+            .book-cover {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header banner">
+            <h3>SG Library</h3>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="active">
+                <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
+                <span>Book Titles</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h2 class="main-header">BOOK DETAILS</h2>
+        
+        <div class="book-details-container">
+            <img src="{{ book.url if book.url else 'https://via.placeholder.com/150x225?text=No+Cover' }}" 
+                 alt="{{ book.title }}" 
+                 class="book-cover"
+                 onerror="this.src='https://via.placeholder.com/150x225?text=No+Cover'">
+            
+            <div class="book-info-text">
+                <h1>{{ book.title }}</h1>
+                <p class="author">By 
+                    {% for author in book.authors %}
+                        {{ author }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        Unknown Author
+                    {% endfor %}
+                </p>
+                
+                <div class="book-meta">
+                    <p><span>Category:</span> 
+                        {% if book.category %}
+                            {{ book.category }}
+                            {% if book.genres %}, {% endif %}
+                        {% endif %}
+                        {% if book.genres %}
+                            <span class="category-genre-tags">
+                                {% for genre in book.genres %}
+                                    <span>{{ genre }}</span>{% if not loop.last %},{% endif %}
+                                {% endfor %}
+                            </span>
+                        {% endif %}
+                    </p>
+                    <p><span>Pages:</span> {{ book.pages if book.pages else 'N/A' }}</p>
+                    <p><span>Copies:</span> {{ book.copies if book.copies is not none else 'N/A' }} Available: {{ book.available if book.available is not none else 'N/A' }}</p>
+                </div>
+                
+                <div class="book-description">
+                    {% if book.description %}
+                        {% for paragraph in book.description %}
+                            <p>{{ paragraph | trim }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No detailed description available for this book.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="back-button">Back to Book Titles</a>
+    </div>
+</body>
+</html>
