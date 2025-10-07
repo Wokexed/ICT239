@@ -100,6 +100,18 @@
         .sidebar-menu li i {
             width: 20px;
         }
+
+        .sidebar-menu li a {
+            text-decoration: none; /* Removes the underline */
+            color: #ffffff;          /* Sets a dark gray color */
+            display: flex;        /* Useful for aligning icon and text */
+            align-items: center;  /* Vertically centers icon and text */
+            padding: 2px 15px;   /* Adds spacing around the link content */
+            transition: background-color 0.3s; /* Smooth transition for hover effects */
+            margin-top: -30px;
+            margin-left: -20px;
+            gap: 20px;
+        }
         
         .page-container {
             display: flex;
@@ -395,8 +407,21 @@
                     <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
                     <span>Book Titles</span>
                 </li>
+                <li>
+                    <a href="/login.html">
+                        <img src="https://cdn-icons-png.flaticon.com/512/152/152532.png" alt="Login Icon" class="icon-image">
+                        <span>Login</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/register.html">
+                        <img src="{{ url_for('static', filename='img/user.png') }}" alt="Register Icon" class="icon-image" width="24" height="24">
+                        <span>Register</span>
+                    </a>
+                </li>
+
             </ul>
-        </div>  
+        </div>
         
         <!-- Main Content -->   
         <div class="main-content">
