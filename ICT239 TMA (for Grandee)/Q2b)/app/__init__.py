@@ -13,6 +13,6 @@ def create_app():
     }
     db.init_app(app)
 
-    return app, db
+    return app
 
-app, db = create_app()
+app = create_app()

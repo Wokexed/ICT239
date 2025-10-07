@@ -63,24 +63,25 @@
                 
                 <div class="book-description">
                     {% if book.description %}
-                        
-                        {% set lines = book.description | map('trim') | reject('equalto', '') | list %}
-                        
-                        {% if lines %}
-                            <p>>{{ lines[0] }}</p>
-                            
-                            {% if lines|length > 1 %}
-                                <p></p>
-                                
-                                <p>{{ lines[-1] }}</p>
-                            {% endif %}
-                            
-                        {% else %}
-                            A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
+                        {% set paragraphs = book.description %}
+                        {% if paragraphs is string %}
+                            {% set paragraphs = paragraphs.split('\n\n') %}
                         {% endif %}
+                        {% set paragraphs = paragraphs | map('trim') | reject('equalto', '') | list %}
                         
+                        {% if paragraphs %}
+                            <!-- First paragraph -->
+                            <p>{{ paragraphs[0] }}</p>
+                            
+                            {% if paragraphs|length > 1 %}
+                                <!-- Last paragraph -->
+                                <p>{{ paragraphs[-1] }}</p>
+                            {% endif %}
+                        {% else %}
+                            <p>A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.</p>
+                        {% endif %}
                     {% else %}
-                        A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.
+                        <p>A comprehensive book covering various topics. Click "More details" to see the complete description and additional information.</p>
                     {% endif %}
                 </div>
                 

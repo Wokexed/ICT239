@@ -1,9 +1,8 @@
-from app import db, create_app
+from app import app, db
 from app.model import Book
 from app.books import all_books  # Your dataset
 
 # Initialize Flask app and MongoEngine
-app, db = create_app()
 app.app_context().push()  # Needed to use db outside Flask routes
 
 # Insert all books into MongoDB

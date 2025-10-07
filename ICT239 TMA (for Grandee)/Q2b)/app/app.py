@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from app.books import all_books
 from app import app
 from app.model import Book
 
@@ -27,33 +26,33 @@ from app.model import Book
 #     return decorated_function
 
 # Process books data for display
-def get_books_list():
-    """Convert books from books.py format to display format"""
-    books_list = []
-    for idx, book in enumerate(all_books):
-        # Join genres
-        genre_str = ', '.join(book.get('genres', []))
+# def get_books_list():
+#     """Convert books from books.py format to display format"""
+#     books_list = []
+#     for idx, book in enumerate(all_books):
+#         # Join genres
+#         genre_str = ', '.join(book.get('genres', []))
         
-        # Join description paragraphs
-        description = '\n\n'.join(book.get('description', []))
+#         # Join description paragraphs
+#         description = '\n\n'.join(book.get('description', []))
         
-        # Join authors
-        author_str = ', '.join(book.get('authors', ['Unknown Author']))
+#         # Join authors
+#         author_str = ', '.join(book.get('authors', ['Unknown Author']))
         
-        books_list.append({
-            'id': idx + 1,
-            'title': book.get('title', 'Unknown'),
-            'author': author_str,
-            'genre': genre_str,
-            'category': book.get('category', 'Adult'),
-            'pages': book.get('pages', 0),
-            'cover_image': book.get('url', ''),
-            'description': description,
-            'copies_available': book.get('available', 1),
-            'total_copies': book.get('copies', 1)
-        })
+#         books_list.append({
+#             'id': idx + 1,
+#             'title': book.get('title', 'Unknown'),
+#             'author': author_str,
+#             'genre': genre_str,
+#             'category': book.get('category', 'Adult'),
+#             'pages': book.get('pages', 0),
+#             'cover_image': book.get('url', ''),
+#             'description': description,
+#             'copies_available': book.get('available', 1),
+#             'total_copies': book.get('copies', 1)
+#         })
     
-    return books_list
+#     return books_list
 
 # Routes
 
@@ -64,26 +63,67 @@ def get_books_list():
     
 #     return render_template('index.html', books=Book.objects)
         
+# @app.route("/")      # IF TS DONT WORK RESTORE THIS
+# def index():
+#     """Home page showing all book titles sorted alphabetically"""
+#     books = Book.objects.order_by('title')
+#     books_sorted = sorted(books, key=lambda x: x['title'])
+#     return render_template('index.html', books=books_sorted)
+
 @app.route("/")
 def index():
-    """Home page showing all book titles sorted alphabetically"""
-    books = get_books_list()
-    books_sorted = sorted(books, key=lambda x: x['title'])
-    return render_template('index.html', books=books_sorted)
+    books_list = []
+    for book in Book.objects.order_by('title'):
+        books_list.append({
+            'id': str(book.id),
+            'title': book.title,
+            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+            'category': book.category or 'Adult',
+            'pages': book.pages or 0,
+            'cover_image': book.url or '',
+            'description': '\n\n'.join(book.description) if book.description else '',
+            'copies_available': book.available or 1,
+            'total_copies': book.copies or 1
+        })
+    return render_template('index.html', books=books_list)
 
-@app.route('/book/<int:book_id>')
+# @app.route('/book/<int:book_id>')
+# def book_details(book_id):
+#     """Display detailed information about a specific book"""
+#     books = Book.objects.order_by('title')
+    
+#     # Find book by id (id is index + 1)
+#     if 0 < book_id <= len(books):
+#         book = books[book_id - 1]
+#         return render_template('book_details.html', book=book)
+#     else:
+#         flash('Book not found.', 'danger')
+#         return redirect(url_for('index'))
+@app.route('/book/<book_id>')
 def book_details(book_id):
     """Display detailed information about a specific book"""
-    books = get_books_list()
-    
-    # Find book by id (id is index + 1)
-    if 0 < book_id <= len(books):
-        book = books[book_id - 1]
-        return render_template('book_details.html', book=book)
-    else:
+    from bson.objectid import ObjectId
+
+    try:
+        book = Book.objects.get(id=ObjectId(book_id))
+        book_data = {
+            'id': str(book.id),
+            'title': book.title,
+            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+            'category': book.category or 'Adult',
+            'pages': book.pages or 0,
+            'cover_image': book.url or '',
+            'description': '\n\n'.join(book.description) if book.description else '',
+            'copies_available': book.available or 1,
+            'total_copies': book.copies or 1
+        }
+        return render_template('book_details.html', book=book_data)
+    except Exception:
         flash('Book not found.', 'danger')
         return redirect(url_for('index'))
-
+    
 # @app.route('/login', methods=['GET', 'POST'])
 # def login():
 #     """User login page"""
