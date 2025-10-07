@@ -408,18 +408,17 @@
                     <span>Book Titles</span>
                 </li>
                 <li>
-                    <a href="/login.html">
+                    <a href="/login">
                         <img src="https://cdn-icons-png.flaticon.com/512/152/152532.png" alt="Login Icon" class="icon-image">
                         <span>Login</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/register.html">
+                    <a href="/register">
                         <img src="{{ url_for('static', filename='img/user.png') }}" alt="Register Icon" class="icon-image" width="24" height="24">
                         <span>Register</span>
                     </a>
                 </li>
-
             </ul>
         </div>
         
@@ -430,6 +429,20 @@
                 <h1>{% block page_title %}BOOK TITLES{% endblock %}</h1>
             </div>
         
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-messages">
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+            
             <!-- Page Content -->
             {% block content %}{% endblock %}
         </div>

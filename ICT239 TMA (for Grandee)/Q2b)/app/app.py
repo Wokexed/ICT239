@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from app import app
-from app.model import Book
+from app.model import Book, User, LoginForm, RegistrationForm
+from flask_login import login_user, logout_user, login_required, current_user
 
 
 # Create an admin user account (admin@lib.sg, password 12345, name Admin). 
@@ -123,6 +124,79 @@ def book_details(book_id):
     except Exception:
         flash('Book not found.', 'danger')
         return redirect(url_for('index'))
+    
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+
+    if request.method == "GET":
+        return render_template('register.html', form=form)
+
+    print("Form submitted!")
+
+    if form.validate_on_submit():
+        print("Form validated!")
+        name = form.name.data
+        email = form.email.data
+        password = form.password.data
+        is_admin = form.is_admin.data if hasattr(form, "is_admin") else False
+
+        print(f"📝 Form data - Name: {name}, Email: {email}, Password length: {len(password)}")
+
+        # Check if user already exists
+        print(f"🔍 About to check for existing user with email: {email}")
+        existing_user = User.get_user_by_email(email)
+        print(f"🔍 Existing user result: {existing_user}")
+        print(f"🔍 Type of existing_user: {type(existing_user)}")
+        
+        if existing_user:
+            print("⚠️ User already exists! Redirecting...")
+            flash('Email already registered.', 'danger')
+            return redirect(url_for('register'))
+
+        # ✅ Only create user if email doesn't exist
+        print("🚀 About to call User.create_user()...")
+        new_user = User.create_user(name, email, password, is_admin)
+        print(f"🔍 create_user() returned: {new_user}")
+
+        if new_user:
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Error creating user. Please try again.', 'danger')
+            return render_template('register.html', form=form)
+
+    else:
+        # Only runs if validation fails
+        print("❌ Form validation failed!")
+        print("Form errors:", form.errors)
+        flash('Error in form submission. Please check your inputs.', 'danger')
+        return render_template('register.html', form=form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == "GET":
+        form = LoginForm()
+        return render_template('login.html', form=form)
+    else:
+        username = request.form.get('email')
+        password = request.form.get('password')
+        user = User.check_user_credentials(username, password)
+        if user:
+            login_user(user)
+            flash(f'Welcome back, {username}!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid email or password.', 'danger')
+            form = LoginForm()
+            return render_template('login.html', form=form)
+
+@app.route("/logout")
+@login_required
+def logout():
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
     
 # @app.route('/login', methods=['GET', 'POST'])
 # def login():
