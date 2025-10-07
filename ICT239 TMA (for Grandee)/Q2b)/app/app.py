@@ -192,9 +192,13 @@ def login():
             form = LoginForm()
             return render_template('login.html', form=form)
 
-@app.route("/logout")
+@app.route("/logout", methods=['POST']) # Add methods=['POST']
 @login_required
 def logout():
+    # 1. Perform the actual logout action
+    logout_user() 
+    
+    # 2. Flash the message and redirect
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
     
