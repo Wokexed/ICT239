@@ -1,21 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from app import app
+from app import app, db
 from app.model import Book, User, LoginForm, RegistrationForm
 from flask_login import login_user, logout_user, login_required, current_user
-
-
-# Create an admin user account (admin@lib.sg, password 12345, name Admin). 
-# Create also a non-admin user account (poh@lib.sg, password 12345, name Peter Oh).
-# users = {
-#     'admin@lib.sg': {
-#         'password': '12345',
-#         'is_admin': True
-#     },
-#     'peter@lib.sg': {
-#         'password': '12345',
-#         'is_admin': False
-#     }
-# }
 
 # # Login required decorator
 # def login_required(f):
@@ -173,24 +159,58 @@ def register():
         flash('Error in form submission. Please check your inputs.', 'danger')
         return render_template('register.html', form=form)
 
-
+# original login route
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == "GET":
+#         form = LoginForm()
+#         return render_template('login.html', form=form)
+#     else:
+#         username = request.form.get('email')
+#         password = request.form.get('password')
+#         user = User.check_user_credentials(username, password)
+#         if user:
+#             login_user(user)
+#             flash(f'Welcome back, {username}!', 'success')
+#             return redirect(url_for('index'))
+#         else:
+#             flash('Invalid email or password.', 'danger')
+#             form = LoginForm()
+#             return render_template('login.html', form=form)
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "GET":
-        form = LoginForm()
-        return render_template('login.html', form=form)
-    else:
-        username = request.form.get('email')
-        password = request.form.get('password')
-        user = User.check_user_credentials(username, password)
+    print("\n--- LOGIN ROUTE ACCESSED ---")
+    
+    if current_user.is_authenticated:
+        if current_user.is_admin:
+            return redirect(url_for('admin_dashboard')) 
+        return redirect(url_for('index'))
+
+    form = LoginForm()
+    
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        
+        print(f"Login attempt - Email: {email}, Password: {'*' * len(password)}")
+
+        user = User.check_user_credentials(email, password)
+        print(f"User lookup result: {user}")
+        
         if user:
             login_user(user)
-            flash(f'Welcome back, {username}!', 'success')
+            flash(f'Welcome back, {user.name}!', 'success')
+            
+            if user.is_admin:
+                return redirect(url_for('admin_dashboard')) 
+            
             return redirect(url_for('index'))
         else:
+            # IMPORTANT: Flash error and let form re-render with validation
             flash('Invalid email or password.', 'danger')
-            form = LoginForm()
-            return render_template('login.html', form=form)
+            
+    # This handles both GET requests AND failed login attempts
+    return render_template('login.html', form=form)
 
 @app.route("/logout", methods=['POST']) # Add methods=['POST']
 @login_required
@@ -201,7 +221,120 @@ def logout():
     # 2. Flash the message and redirect
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
+
+# @app.route('/new_book', methods=['GET', 'POST'])
+# @login_required
+# def new_book():
+#     """Add a new book (admin only)"""
+#     if not current_user.is_admin:
+#         flash('Admin access required to add new books.', 'danger')
+#         return redirect(url_for('index'))
     
+#     if request.method == 'POST':
+#         title = request.form.get('title')
+#         authors = request.form.get('authors', '').split(',')
+#         genres = request.form.get('genres', '').split(',')
+#         category = request.form.get('category')
+#         pages = int(request.form.get('pages', 0))
+#         url = request.form.get('url')
+#         description = request.form.get('description', '').split('\n\n')
+#         copies = int(request.form.get('copies', 1))
+#         available = copies  # Initially, all copies are available
+        
+#         new_book = Book(
+#             title=title,
+#             authors=[author.strip() for author in authors if author.strip()],
+#             genres=[genre.strip() for genre in genres if genre.strip()],
+#             category=category,
+#             pages=pages,
+#             url=url,
+#             description=[desc.strip() for desc in description if desc.strip()],
+#             copies=copies,
+#             available=available
+#         )
+#         new_book.save()
+        
+#         flash(f'Book "{title}" added successfully!', 'success')
+#         return redirect(url_for('index'))
+    
+#     return render_template('new_book.html')
+@app.route('/new_book', methods=['GET', 'POST'])
+@login_required
+def add_book():
+    if request.method == 'POST':
+        if request.form.get('add_author'):
+            # Just re-render with one more author row
+            return render_template('new_book.html')
+        
+        if request.form.get('remove_author'):
+            # Just re-render without that author row
+            return render_template('new_book.html')
+        
+        if request.form.get('submit_book'):
+            # Process the book submission
+            genres = request.form.getlist('genres')
+            title = request.form.get('title')
+            category = request.form.get('category')
+            cover_url = request.form.get('cover_url')
+            description = request.form.get('description')
+            author_names = request.form.getlist('author_name')
+            author_illustrators = request.form.getlist('author_illustrator')
+            num_pages = request.form.get('num_pages')
+            num_copies = request.form.get('num_copies')
+            
+            # Validate required fields
+            if not title or not category or not author_names or not author_names[0]:
+                flash('Please fill in all required fields.', 'danger')
+                return render_template('new_book.html')
+            
+            try:
+                # Create book in database
+                book = Book(title=title, category=category, description=description,
+                           cover_url=cover_url, num_pages=num_pages, num_copies=num_copies)
+                
+                # Add genres
+                for genre in genres:
+                    # Add genre to book (depends on your DB structure)
+                    pass
+                
+                # Add authors
+                for i, author_name in enumerate(author_names):
+                    if author_name:  # Only add non-empty authors
+                        is_illustrator = str(i) in author_illustrators
+                        # Create author relationship (depends on your DB structure)
+                        pass
+                
+                db.session.add(book)
+                db.session.commit()
+                
+                flash(f'Book "{title}" added successfully!', 'success')
+                return redirect(url_for('new_book'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error adding book: {str(e)}', 'danger')
+    
+    return render_template('new_book.html')
+
+@app.route('/admin/dashboard')
+@login_required 
+def admin_dashboard():
+    # REPLICATE THE BOOK FETCHING LOGIC FROM YOUR INDEX ROUTE
+    books_list = []
+    for book in Book.objects.order_by('title'):
+        books_list.append({
+            'id': str(book.id),
+            'title': book.title,
+            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+            'category': book.category or 'Adult',
+            'pages': book.pages or 0,
+            'cover_image': book.url or '',
+            'description': '\n\n'.join(book.description) if book.description else '',
+            'copies_available': book.available or 1,
+            'total_copies': book.copies or 1
+        })
+        
+    return render_template('index.html', books=books_list)
 # @app.route('/login', methods=['GET', 'POST'])
 # def login():
 #     """User login page"""

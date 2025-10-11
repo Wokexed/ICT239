@@ -404,6 +404,25 @@
                 width: 40%;               /* let button size itself naturally */
                 padding: 10px 30px;        /* keep padding */
             }
+
+            .menu-separator {
+                /* 1. Reset all conflicting properties from parent <li> styles */
+                list-style: none !important;
+                padding: 0 0px !important; /* Keep horizontal padding for alignment */
+                margin: 0px 0 !important; /* Control vertical spacing */
+                
+                /* 2. Critical properties to render the line */
+                height: 1px !important; /* Ensure it is exactly 1 pixel high */
+                background-color: #777777 !important; /* Make sure the color is applied */
+                
+                /* 3. Ensure it behaves like a block element */
+                display: block !important; 
+                
+                /* Optional: Ensure the line spans the full width of the padded list item */
+                width: auto !important;
+            }
+
+            
         }
         
     </style>
@@ -418,24 +437,75 @@
                 <h3>SG Library</h3>
             </div>
 
-            <ul class="sidebar-menu">
-                <li class="active">
-                    <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
-                    <span>Book Titles</span>
-                </li>
-                <li>
-                    <a href="/login">
-                        <img src="https://cdn-icons-png.flaticon.com/512/152/152532.png" alt="Login Icon" class="icon-image">
-                        <span>Login</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/register">
-                        <img src="{{ url_for('static', filename='img/user.png') }}" alt="Register Icon" class="icon-image" width="24" height="24">
-                        <span>Register</span>
-                    </a>
-                </li>
-            </ul>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+                <!-- Admin Sidebar -->
+                <ul class="sidebar-menu">
+                    <li class="menu-section">
+                        <span class="section-title">Admin</span>
+                    </li>
+
+                    <hr>
+
+                    <li>
+                        <a href="/admin/books">
+                            <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
+                            <span>Book Titles</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/new_book">
+                            <img src="https://cdn-icons-png.flaticon.com/512/992/992689.png" alt="New Book" class="icon-image">
+                            <span>New Book</span>
+                        </a>
+                    </li>
+                </ul>
+
+
+            {% elif current_user.is_authenticated %}
+                <!-- Regular User Sidebar -->
+                <ul class="sidebar-menu">
+                    <li class="menu-section">
+                        <span class="section-title">User</span>
+                    </li>
+                    <li>
+                        <a href="/books">
+                            <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
+                            <span>Browse Books</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/borrowed">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png" alt="Borrowed Books" class="icon-image">
+                            <span>Borrowed Books</span>
+                        </a>
+                    </li>
+                    <li class="menu-section">
+                        <span class="section-title">Account</span>
+                    </li>
+                </ul>
+
+            {% else %}
+                <!-- Unauthenticated User Sidebar -->
+                <ul class="sidebar-menu">
+                    <li class="active">
+                        <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
+                        <span>Book Titles</span>
+                    </li>
+                    <li>
+                        <a href="/login">
+                            <img src="https://cdn-icons-png.flaticon.com/512/152/152532.png" alt="Login Icon" class="icon-image">
+                            <span>Login</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/register">
+                            <img src="{{ url_for('static', filename='img/user.png') }}" alt="Register Icon" class="icon-image" width="24" height="24">
+                            <span>Register</span>
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
         </div>
         
         <!-- Main Content -->   
@@ -446,13 +516,14 @@
 
                 {% if current_user.is_authenticated %}
                 <form action="{{ url_for('logout') }}" method="post" class="ms-auto">
-                    <button type="submit" class="logout-btn">
-                        Logout 🚪
-                    </button>
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Logout <img src="{{ url_for('static', filename='img/logout.png') }}" 
+                            alt="Logout icon" 
+                            style="height: 1.5em; vertical-align: middle; margin-left: 8px;"> </button>
                 </form>
                 {% endif %}
             </div>
-        
+                    
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}

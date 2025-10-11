@@ -100,9 +100,12 @@ class User(db.Document, UserMixin):
     @staticmethod
     def check_user_credentials(email, password):
         user = User.get_user_by_email(email)
+        print(f"Attempting login for: {email}, User found: {bool(user)}")
         if user and check_password_hash(user.password_hash, password):
+            print("Password check passed.") 
             return user
         return None
+    
     
 @login_manager.user_loader
 def load_user(user_id):

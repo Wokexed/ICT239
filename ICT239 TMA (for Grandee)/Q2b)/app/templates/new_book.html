@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Add a Book - SG Library{% endblock %}
+
+{% block page_title %}ADD A BOOK{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-book-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+        margin-bottom: 25px;
+    }
+
+    .form-section label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .form-section input[type="text"],
+    .form-section input[type="number"],
+    .form-section input[type="url"],
+    .form-section select,
+    .form-section textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .form-section textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-section input:focus,
+    .form-section select:focus,
+    .form-section textarea:focus {
+        outline: none;
+        border-color: #4c9c4c;
+        box-shadow: 0 0 5px rgba(76, 156, 76, 0.3);
+    }
+
+    .multi-select {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+
+    .multi-select label {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: normal;
+        cursor: pointer;
+    }
+
+    .multi-select input[type="checkbox"] {
+        margin-right: 8px;
+        width: auto;
+        cursor: pointer;
+    }
+
+    .author-row {
+        display: grid;
+        grid-template-columns: 1fr 150px 80px;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+    }
+
+    .author-row input[type="text"] {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .author-row .form-check {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    .form-check-label {
+        margin-left: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: normal;
+        white-space: nowrap;
+    }
+
+    .author-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-add-author,
+    .btn-remove-author {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .btn-add-author {
+        background-color: #4c9c4c;
+        color: white;
+    }
+
+    .btn-add-author:hover {
+        background-color: #4cae4c;
+    }
+
+    .btn-remove-author {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-remove-author:hover {
+        background-color: #c82333;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .submit-button {
+        background-color: #4c9c4c;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .submit-button:hover {
+        background-color: #4cae4c;
+    }
+
+    .form-note {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    .authors-section {
+        margin-top: 10px;
+    }
+
+    .author-instructions {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 12px;
+        padding: 10px;
+        background-color: #f0f8f0;
+        border-left: 3px solid #4c9c4c;
+        border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+        .author-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="add-book-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="">
+        <!-- Genres Section -->
+        <div class="form-section">
+            <label>Choose multiple Genres:</label>
+            <div class="multi-select">
+                {% set genres = ["Animals", "Business", "Comics", "Communication", "Dark Academia", "Emotion", "Fantasy", "Fiction", "Friendship", "Graphic Novels", "Grief", "Historical Fiction", "Indigenous", "Inspirational", "Magic", "Mental Health", "Nonfiction", "Personal Development", "Philosophy", "Picture Books", "Poetry", "Productivity", "Psychology", "Romance", "School", "Self Help"] %}
+                {% for genre in genres %}
+                    <label>
+                        <input type="checkbox" name="genres" value="{{ genre }}" 
+                            {% if request.method == 'POST' and genre in request.form.getlist('genres') %}checked{% endif %}>
+                        {{ genre }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="form-section">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required
+                value="{{ request.form.get('title', '') }}">
+        </div>
+
+        <!-- Category -->
+        <div class="form-section">
+            <label for="category">Choose a category:</label>
+            <select id="category" name="category" required>
+                <option value="">-- Select a category --</option>
+                <option value="Children" {% if request.form.get('category') == 'Children' %}selected{% endif %}>Children</option>
+                <option value="Young Adult" {% if request.form.get('category') == 'Young Adult' %}selected{% endif %}>Young Adult</option>
+                <option value="Adult" {% if request.form.get('category') == 'Adult' %}selected{% endif %}>Adult</option>
+                <option value="Educational" {% if request.form.get('category') == 'Educational' %}selected{% endif %}>Educational</option>
+                <option value="Reference" {% if request.form.get('category') == 'Reference' %}selected{% endif %}>Reference</option>
+            </select>
+        </div>
+
+        <!-- URL for Cover -->
+        <div class="form-section">
+            <label for="cover_url">URL for Cover:</label>
+            <input type="url" id="cover_url" name="cover_url" placeholder="https://example.com/cover.jpg"
+                value="{{ request.form.get('cover_url', '') }}">
+        </div>
+
+        <!-- Description -->
+        <div class="form-section">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description">{{ request.form.get('description', '') }}</textarea>
+        </div>
+
+        <!-- Authors Section -->
+        <div class="form-section">
+            <label>Authors:</label>
+            <div class="author-instructions">
+                Add as many authors as needed. Use the "+ Add Author" button to add more, and "Remove" to delete an author row.
+            </div>
+            <div id="authors-container" class="authors-section">
+                {% set author_count = request.form.getlist('author_name')|length if request.form.getlist('author_name') else 1 %}
+                {% for i in range(author_count) %}
+                    <div class="author-row">
+                        <input type="text" name="author_name" placeholder="Author name" 
+                            value="{{ request.form.getlist('author_name')[i] if i < request.form.getlist('author_name')|length else '' }}">
+                        <div class="form-check">
+                            <input type="checkbox" id="illustrator_{{ i }}" name="author_illustrator" value="{{ i }}" class="form-check-input"
+                                {% if i|string in request.form.getlist('author_illustrator') %}checked{% endif %}
+                            <label class="form-check-label" for="illustrator_{{ i }}">Illustrator</label>
+                        </div>
+                        {% if author_count > 1 %}
+                            <button type="submit" name="remove_author" value="{{ i }}" class="btn-remove-author">Remove</button>
+                        {% else %}
+                            <button type="submit" name="add_author" value="true" class="btn-add-author">+ Add</button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Number of Pages and Copies -->
+        <div class="form-row">
+            <div class="form-section">
+                <label for="num_pages">Number of pages:</label>
+                <input type="number" id="num_pages" name="num_pages" min="1"
+                    value="{{ request.form.get('num_pages', '') }}">
+            </div>
+            <div class="form-section">
+                <label for="num_copies">Number of copies:</label>
+                <input type="number" id="num_copies" name="num_copies" min="1"
+                    value="{{ request.form.get('num_copies', '') }}">
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" name="submit_book" value="true" class="submit-button">Submit</button>
+    </form>
+</div>
+{% endblock %}  
