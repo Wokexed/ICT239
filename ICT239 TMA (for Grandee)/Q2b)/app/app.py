@@ -520,7 +520,8 @@ def admin_dashboard():
 @app.route('/book/<book_id>/loan', methods=['GET', 'POST'])
 def make_loan(book_id):
     # Your make_loan logic here
-    return render_template('make_loan.html', book_id=book_id)
+    return "Page under construction."
+    #return render_template('make_loan.html', book_id=book_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
