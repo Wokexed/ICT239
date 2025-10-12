@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from app import app, db
 from app.model import Book, User, LoginForm, RegistrationForm, Author
 from flask_login import login_user, logout_user, login_required, current_user
+from app.loan import Loan
 
 # # Login required decorator
 # def login_required(f):
@@ -487,11 +488,11 @@ def admin_dashboard():
             'pages': book.pages or 0,
             'cover_image': book.url or '',
             'description': '\n\n'.join(book.description) if book.description else '',
-            'copies_available': book.available or 1,
+            'copies_available': book.available or 0,
             'total_copies': book.copies or 1
         })
         
-    return render_template('index.html', books=books_list)
+    return render_template('admin_index.html', books=books_list)
 # @app.route('/login', methods=['GET', 'POST'])
 # def login():
 #     """User login page"""
@@ -518,10 +519,99 @@ def admin_dashboard():
 #     return redirect(url_for('index'))
 
 @app.route('/book/<book_id>/loan', methods=['GET', 'POST'])
+@login_required
 def make_loan(book_id):
-    # Your make_loan logic here
-    return "Page under construction."
-    #return render_template('make_loan.html', book_id=book_id)
+    """
+    Make a loan for the current authenticated user.
+    Can be accessed from Book Titles page or Book Details page.
+    """
+    from datetime import datetime, timedelta
+    import random
+    
+    print(f"🔍 make_loan called for book_id: {book_id}")
+    print(f"🔍 Current user: {current_user.name} (ID: {current_user.id})")
+    
+    # Check if user is admin
+    if current_user.is_admin:
+        flash('Admin users cannot make loans.', 'warning')
+        return redirect(request.referrer or url_for('index'))
+    
+    # Get the book
+    book = Book.get_book_by_id(book_id)
+    print(f"🔍 Book found: {book.title if book else 'None'}")
+    print(f"🔍 Book available: {book.available if book else 'N/A'}")
+    
+    if not book:
+        flash('Book not found.', 'danger')
+        return redirect(url_for('index'))
+    
+    # Generate random borrow date between 10-20 days before today
+    days_ago = random.randint(10, 20)
+    borrow_date = datetime.now() - timedelta(days=days_ago)
+    print(f"🔍 Generated borrow date: {borrow_date} ({days_ago} days ago)")
+    
+    # Create the loan
+    success, message, loan = Loan.create_loan(
+        user=current_user,
+        book=book,
+        borrow_date=borrow_date
+    )
+    
+    print(f"🔍 Loan creation: success={success}, message={message}")
+    if loan:
+        print(f"✅ Loan saved with ID: {loan.id}")
+    
+    # Flash appropriate message
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'danger')
+    
+    # Redirect back to the page the user came from
+    return redirect(request.referrer or url_for('index'))
+
+@app.route('/loans', methods=['GET', 'POST'])
+@login_required
+def view_loans():
+    from datetime import timedelta
+    """
+    Display and manage current loans for the authenticated user.
+    Handles renew, return, and delete actions via POST.
+    """
+    if request.method == 'POST':
+        action = request.form.get('action')
+        loan_id = request.form.get('loan_id')
+        
+        # Get the loan
+        loan = Loan.get_loan_by_id(loan_id)
+        
+        if not loan:
+            flash('Loan not found.', 'danger')
+        elif str(loan.member.id) != str(current_user.id):
+            flash('You are not authorized to perform this action.', 'danger')
+        else:
+            # Perform the requested action
+            if action == 'renew':
+                success, message = loan.renew_loan()
+                flash(message, 'success' if success else 'danger')
+                
+            elif action == 'return':
+                success, message = loan.return_loan()
+                flash(message, 'success' if success else 'danger')
+                
+            elif action == 'delete':
+                success, message = Loan.delete_loan(loan_id)
+                flash(message, 'success' if success else 'danger')
+    
+    # Get all loans for the current user (ordered by borrow date descending)
+    loans = Loan.get_all_loans_by_user(current_user)
+    
+    # Calculate due dates for each loan (2 weeks after borrow date)
+    for loan in loans:
+        loan.due_date = loan.borrowDate + timedelta(weeks=2)
+        loan.is_overdue = loan.is_overdue(max_loan_days=14)
+    
+    return render_template('loans.html', loans=loans)
 
 if __name__ == '__main__':
     app.run(debug=True)

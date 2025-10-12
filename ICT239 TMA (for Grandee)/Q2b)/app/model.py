@@ -5,7 +5,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from loan import Loan
+from app.loan import Loan
 
 class Author(db.EmbeddedDocument):
     name = db.StringField(required=True)

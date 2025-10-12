@@ -15,6 +15,9 @@ def create_app():
     db.init_app(app)
     login_manager = LoginManager(app)
 
+    login_manager.login_view = 'login'
+    login_manager.login_message_category = 'info'
+
     return app, login_manager
 
 app, login_manager = create_app()

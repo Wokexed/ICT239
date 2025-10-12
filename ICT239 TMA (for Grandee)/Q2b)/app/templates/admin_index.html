@@ -95,9 +95,7 @@
                 
                 <div class="book-buttons">
                     {% if book['copies_available'] and book['copies_available'] > 0 %}
-                    <form action="{{ url_for('make_loan', book_id=book.id) }}" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-more">Make a Loan</button>
-                    </form>
+                    <a href="{{ url_for('make_loan', book_id=book.id) }}" class="btn btn-more">Make a Loan</a>
                     {% endif %}
                     
                     <a href="{{ url_for('book_details', book_id=book.id) }}" class="btn btn-more">More details</a>

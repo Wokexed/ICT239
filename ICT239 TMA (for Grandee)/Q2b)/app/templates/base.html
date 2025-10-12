@@ -465,8 +465,33 @@
                         </a>
                     </li>
                 </ul>
+            {% elif current_user.is_authenticated %}
+                <!-- Authenticated Non-Admin Sidebar -->
+                <ul class="sidebar-menu">
+                    <li class="menu-section" style="display: flex; justify-content: center; align-items: center;">
+                        <span class="section-title" style="display: flex; align-items: center; gap: 6px;">
+                            <img src="{{ url_for('static', filename='img/login.png') }}" 
+                                alt="Admin Icon" 
+                                style="height: 32px; width: 32px;">
+                            Profile
+                        </span>
+                    </li>
 
+                    <hr>
 
+                    <li>
+                        <a href="/">
+                            <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
+                            <span>Book Titles</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/loans">
+                            <img src="{{ url_for('static', filename='img/loan.png') }}" alt="New Book" class="icon-image">
+                            <span>Loans</span>
+                        </a>
+                    </li>
+                </ul>
             
 
             {% else %}

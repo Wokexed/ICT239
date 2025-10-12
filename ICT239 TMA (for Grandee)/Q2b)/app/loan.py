@@ -26,62 +26,95 @@ class Loan(db.Document):
     def create_loan(user, book, borrow_date=None):
         """
         Create a Loan document for a user.
-        A Loan document can be created only if the user does not already have 
-        an unreturned loan for the same book title.
-        
-        Args:
-            user: User object (or user_id string)
-            book: Book object (or book_id string)
-            borrow_date: Date of borrowing (defaults to now)
-            
-        Returns:
-            tuple: (success: bool, message: str, loan: Loan or None)
         """
+        print("=" * 60)
+        print("🔍 CREATE_LOAN METHOD CALLED")
+        print(f"🔍 User type: {type(user)}, User: {user}")
+        print(f"🔍 Book type: {type(book)}, Book: {book}")
+        print(f"🔍 Borrow date: {borrow_date}")
+        print("=" * 60)
+        
         # Handle string IDs or objects
         if isinstance(user, str):
             from model import User
             user = User.get_user_by_id(user)
+            print(f"🔍 Converted user from string to object: {user}")
         if isinstance(book, str):
             from model import Book
             book = Book.get_book_by_id(book)
+            print(f"🔍 Converted book from string to object: {book}")
         
         # Validate inputs
         if not user:
+            print("❌ User validation failed")
             return False, "Invalid user.", None
         if not book:
+            print("❌ Book validation failed")
             return False, "Book not found.", None
+        
+        print(f"✅ User validated: {user.name} (ID: {user.id})")
+        print(f"✅ Book validated: {book.title} (ID: {book.id})")
         
         # Check if user already has an unreturned loan for this book title
         existing_loan = Loan.objects(
             member=user,
             book=book,
-            returnDate=None  # returnDate is None means unreturned
+            returnDate=None
         ).first()
         
+        print(f"🔍 Checking for existing unreturned loan...")
+        print(f"🔍 Existing loan found: {existing_loan}")
+        
         if existing_loan:
+            print(f"❌ User already has unreturned loan")
             return False, f"You already have an unreturned loan for '{book.title}'.", None
         
         # Check if book has available copies
+        print(f"🔍 Book available copies: {book.available}")
+        
         if not book.available or book.available <= 0:
+            print(f"❌ No available copies")
             return False, f"No available copies of '{book.title}'.", None
         
         # Create the loan
         try:
+            print("🔍 Creating Loan object...")
             loan = Loan(
                 member=user,
                 book=book,
                 borrowDate=borrow_date or datetime.now(),
                 renewCount=0
             )
+            print(f"✅ Loan object created: {loan}")
+            print(f"   - Member: {loan.member}")
+            print(f"   - Book: {loan.book}")
+            print(f"   - Borrow Date: {loan.borrowDate}")
+            print(f"   - Renew Count: {loan.renewCount}")
+            
+            print("🔍 Attempting to save loan to database...")
             loan.save()
+            print(f"✅✅✅ LOAN SAVED SUCCESSFULLY! ID: {loan.id}")
             
             # Update book's available count
+            print(f"🔍 Updating book availability from {book.available} to {book.available - 1}")
             book.available -= 1
             book.save()
+            print(f"✅ Book availability updated successfully")
+            
+            print("=" * 60)
+            print(f"🎉 SUCCESS! Loan created with ID: {loan.id}")
+            print("=" * 60)
             
             return True, f"Successfully borrowed '{book.title}'.", loan
             
         except Exception as e:
+            print("=" * 60)
+            print(f"❌❌❌ ERROR CREATING LOAN")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print("=" * 60)
+            import traceback
+            traceback.print_exc()
             return False, f"Error creating loan: {str(e)}", None
     
     # ==================== RETRIEVE METHODS ====================
@@ -218,7 +251,11 @@ class Loan(db.Document):
         
         try:
             # Update loan record with return date
-            self.returnDate = datetime.now()
+            now = datetime.now()
+            if now < self.borrowDate:
+                self.returnDate = self.borrowDate
+            else:
+                self.returnDate = now
             self.save()
             
             # Update book's available count
