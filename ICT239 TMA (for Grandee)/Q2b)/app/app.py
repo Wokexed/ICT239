@@ -95,10 +95,11 @@ def index():
             'pages': book.pages or 0,
             'cover_image': book.url or '',
             'description': '\n\n'.join(book.description) if book.description else '',
-            'copies_available': book.available or 1,
+            'copies_available': book.available or 0,
             'total_copies': book.copies or 1
         })
     return render_template('index.html', books=books_list)
+
 # @app.route("/")
 # def index():
 #     books_list = []
@@ -117,6 +118,7 @@ def index():
 #         })
 #     return render_template('index.html', books=books_list)
 
+
 # @app.route('/book/<int:book_id>')
 # def book_details(book_id):
 #     """Display detailed information about a specific book"""
@@ -129,6 +131,30 @@ def index():
 #     else:
 #         flash('Book not found.', 'danger')
 #         return redirect(url_for('index'))
+# @app.route('/book/<book_id>')
+# def book_details(book_id):
+#     """Display detailed information about a specific book"""
+#     from bson.objectid import ObjectId
+
+#     try:
+#         book = Book.objects.get(id=ObjectId(book_id))
+#         book_data = {
+#             'id': str(book.id),
+#             'title': book.title,
+#             'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+#             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+#             'category': book.category or 'Adult',
+#             'pages': book.pages or 0,
+#             'cover_image': book.url or '',
+#             'description': '\n\n'.join(book.description) if book.description else '',
+#             'copies_available': book.available or 1,
+#             'total_copies': book.copies or 1
+#         }
+#         return render_template('book_details.html', book=book_data)
+#     except Exception:
+#         flash('Book not found.', 'danger')
+#         return redirect(url_for('index'))
+
 @app.route('/book/<book_id>')
 def book_details(book_id):
     """Display detailed information about a specific book"""
@@ -136,20 +162,33 @@ def book_details(book_id):
 
     try:
         book = Book.objects.get(id=ObjectId(book_id))
+        
+        # --- FIX FOR AUTHOR OBJECTS ---
+        authors_str = 'Unknown Author'
+        if book.authors:
+            # Check if it contains objects and extract the .name attribute (assuming Author model has .name)
+            if hasattr(book.authors[0], 'name'):
+                authors_str = ', '.join([author.name for author in book.authors])
+            # Fallback for simple string lists or if .name fails
+            else:
+                authors_str = ', '.join([str(author) for author in book.authors])
+        # -----------------------------
+        
         book_data = {
             'id': str(book.id),
             'title': book.title,
-            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            'author': authors_str, # Use the correctly formatted string
             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
             'category': book.category or 'Adult',
             'pages': book.pages or 0,
             'cover_image': book.url or '',
             'description': '\n\n'.join(book.description) if book.description else '',
-            'copies_available': book.available or 1,
+            'copies_available': book.available or 0,
             'total_copies': book.copies or 1
         }
         return render_template('book_details.html', book=book_data)
     except Exception:
+        # It's safer to catch a more specific exception like DoesNotExist or InvalidId
         flash('Book not found.', 'danger')
         return redirect(url_for('index'))
     
@@ -477,6 +516,11 @@ def admin_dashboard():
 #     session.clear()
 #     flash('You have been logged out.', 'info')
 #     return redirect(url_for('index'))
+
+@app.route('/book/<book_id>/loan', methods=['GET', 'POST'])
+def make_loan(book_id):
+    # Your make_loan logic here
+    return render_template('make_loan.html', book_id=book_id)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -79,6 +79,14 @@
         text-align: justify;
         color: #444;
     }
+
+    
+    
+    .button-container {
+        display: flex;             /* keep buttons in a row */
+        gap: 10px;                 /* space between buttons */
+        justify-content: flex-end; /* align the whole group to the right */
+    }
     
     .back-button {
         display: inline-block;
@@ -88,12 +96,42 @@
         border-radius: 5px;
         text-decoration: none;
         transition: background-color 0.3s;
-        float: right;
     }
     
     .back-button:hover {        
         background-color: #4cae4c;
-        color: rgb(0, 0, 0);
+        color: white;
+    }
+    
+    .loan-button {
+        display: inline-block;
+        background-color: #5cb85c;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    
+    .loan-button:hover {        
+        background-color: #4cae4c;
+        color: white;
+    }
+    
+    .not-available-button {
+        display: inline-block;
+        background-color: #d9534f;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: not-allowed;
+        transition: background-color 0.3s;
+    }
+    
+    .not-available-button:hover {        
+        background-color: #c9302c;
+        color: white;
     }
 
     @media screen and (max-width: 992px) and (min-width: 769px) {
@@ -188,6 +226,26 @@
         width: 40%;
         font-size: 1rem;
     }
+    
+    .button-container {
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    .loan-button {
+        display: block !important;
+        float: none !important;
+        margin: 10px auto !important;
+        text-align: center !important;
+        padding: 10px 25px !important;
+        border-radius: 5px !important;
+        background-color: #5cb85c !important;
+        color: white !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
+        width: 40%;
+        font-size: 1rem;
+    }
 }
     
 </style>    
@@ -206,7 +264,7 @@ BOOK DETAILS
          onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
     
     <div class="book-info-text">
-        {{ book.title }}
+        <h1>{{ book.title }}</h1>
         <p class="author">By {{ book.author }}</p>
         
         <div class="book-meta">
@@ -234,6 +292,7 @@ BOOK DETAILS
                 </p>
             {% endif %}
         </div>
+
         
         <div class="book-description">
             {% if book.description %}
@@ -246,10 +305,18 @@ BOOK DETAILS
                 <p>No detailed description available for this book.</p>
             {% endif %}
         </div>
-        <a href="{{ url_for('index') }}" class="back-button">Back to Book Titles</a>
+        
+        <div class="button-container">
+            <a href="{{ url_for('index') }}" class="back-button">Back to Book Titles</a>
+            
+            {% if book.copies_available and book.copies_available > 0 %}
+                <a href="{{ url_for('make_loan', book_id=book.id) }}" class="loan-button">Make a Loan</a>
+            {% else %}
+                <button class="not-available-button" disabled>Not Available</button>
+            {% endif %}
+        </div>
     </div>
     
 </div>
-
 
 {% endblock %}

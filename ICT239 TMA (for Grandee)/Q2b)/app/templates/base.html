@@ -440,11 +440,11 @@
             {% if current_user.is_authenticated and current_user.is_admin %}
                 <!-- Admin Sidebar -->
                 <ul class="sidebar-menu">
-                    <li class="menu-section">
-                        <span class="section-title">
+                    <li class="menu-section" style="display: flex; justify-content: center; align-items: center;">
+                        <span class="section-title" style="display: flex; align-items: center; gap: 6px;">
                             <img src="{{ url_for('static', filename='img/admin-icon.png') }}" 
                                 alt="Admin Icon" 
-                                style="height: 32px; width: 32px; vertical-align: middle; margin-right: 6px;">
+                                style="height: 32px; width: 32px;">
                             Admin
                         </span>
                     </li>
@@ -452,7 +452,7 @@
                     <hr>
 
                     <li>
-                        <a href="/admin/books">
+                        <a href="/">
                             <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
                             <span>Book Titles</span>
                         </a>
@@ -467,28 +467,7 @@
                 </ul>
 
 
-            {% elif current_user.is_authenticated %}
-                <!-- Regular User Sidebar -->
-                <ul class="sidebar-menu">
-                    <li class="menu-section">
-                        <span class="section-title">User</span>
-                    </li>
-                    <li>
-                        <a href="/books">
-                            <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
-                            <span>Browse Books</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/borrowed">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png" alt="Borrowed Books" class="icon-image">
-                            <span>Borrowed Books</span>
-                        </a>
-                    </li>
-                    <li class="menu-section">
-                        <span class="section-title">Account</span>
-                    </li>
-                </ul>
+            
 
             {% else %}
                 <!-- Unauthenticated User Sidebar -->

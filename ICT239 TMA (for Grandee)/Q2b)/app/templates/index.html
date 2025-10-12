@@ -4,6 +4,14 @@
 
 {% block content %}
 
+<style>
+    .book-buttons {
+        display: flex;           /* keep buttons in a row */
+        gap: 10px;               /* space between buttons */
+        justify-content: flex-end; /* push the whole button group to the right */
+    }
+</style>
+
 <!-- Filter and count header -->
 <div class="filter-header">
     <p>Number of titles: <span id="bookCount">{{ books|length }}</span></p>
@@ -85,7 +93,13 @@
                     {% endif %}
                 </div>
                 
-                <a href="{{ url_for('book_details', book_id=book.id) }}" class="btn btn-more">More details</a>
+                <div class="book-buttons">
+                    {% if book['copies_available'] and book['copies_available'] > 0 %}
+                    <a href="{{ url_for('make_loan', book_id=book.id) }}" class="btn btn-more">Make a Loan</a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('book_details', book_id=book.id) }}" class="btn btn-more">More details</a>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -97,41 +111,4 @@
     {% endif %}
 </div>
 
-<!-- No Results Message (hidden by default) -->
-<div id="noResults" class="alert alert-warning" style="display: none;">
-    No books found in the selected category.
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function filterBooks() {
-    const category = document.getElementById('categoryFilter').value;
-    const bookCards = document.querySelectorAll('.book-card');
-    const noResults = document.getElementById('noResults');
-    let visibleCount = 0;
-    
-    bookCards.forEach(card => {
-        const bookCategory = card.getAttribute('data-category');
-        
-        if (category === 'All' || bookCategory === category) {
-            card.style.display = 'flex';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Show/hide no results message
-    if (visibleCount === 0) {
-        noResults.style.display = 'block';
-    } else {
-        noResults.style.display = 'none';
-    }
-    
-    // Update count
-    document.getElementById('bookCount').textContent = visibleCount;
-}
-</script>
 {% endblock %}
