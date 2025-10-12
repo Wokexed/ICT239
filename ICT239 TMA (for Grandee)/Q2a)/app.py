@@ -62,7 +62,20 @@ def index():
     """Home page showing all book titles sorted alphabetically"""
     books = get_books_list()
     books_sorted = sorted(books, key=lambda x: x['title'])
-    return render_template('index.html', books=books_sorted)
+    
+    # Get category filter from query parameters
+    category_filter = request.args.get('category', 'All')
+    
+    # Filter books based on category
+    if category_filter != 'All':
+        books_filtered = [book for book in books_sorted 
+                         if book.get('category', 'Adult') == category_filter]
+    else:
+        books_filtered = books_sorted
+    
+    return render_template('index.html', 
+                          books=books_filtered, 
+                          selected_category=category_filter)
 
 @app.route('/book/<int:book_id>')
 def book_details(book_id):

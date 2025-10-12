@@ -9,15 +9,16 @@
     <p>Number of titles: <span id="bookCount">{{ books|length }}</span></p>
     
     <!-- Category Filter -->
-    <div class="category-filter">
+    <form method="get" action="{{ url_for('index') }}" class="category-filter">
         <label for="categoryFilter" style="margin: 0;">Category:</label>
-        <select id="categoryFilter" class="form-select">
-            <option value="All">All</option>
-            <option value="Children">Children</option>
-            <option value="Teens">Teens</option>
-            <option value="Adult">Adult</option>
-        </select><button class="btn btn-success" onclick="filterBooks()">Search</button>
-    </div>
+        <select id="categoryFilter" name="category" class="form-select">
+            <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All</option>
+            <option value="Children" {% if selected_category == 'Children' %}selected{% endif %}>Children</option>
+            <option value="Teens" {% if selected_category == 'Teens' %}selected{% endif %}>Teens</option>
+            <option value="Adults" {% if selected_category == 'Adults' %}selected{% endif %}>Adults</option>
+        </select>
+        <button type="submit" class="btn btn-success">Search</button>
+    </form>
 </div>
 
 <!-- Book Listings -->
@@ -101,36 +102,4 @@
     No books found in the selected category.
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function filterBooks() {
-    const category = document.getElementById('categoryFilter').value;
-    const bookCards = document.querySelectorAll('.book-card');
-    const noResults = document.getElementById('noResults');
-    let visibleCount = 0;
-    
-    bookCards.forEach(card => {
-        const bookCategory = card.getAttribute('data-category');
-        
-        if (category === 'All' || bookCategory === category) {
-            card.style.display = 'flex';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Show/hide no results message
-    if (visibleCount === 0) {
-        noResults.style.display = 'block';
-    } else {
-        noResults.style.display = 'none';
-    }
-    
-    // Update count
-    document.getElementById('bookCount').textContent = visibleCount;
-}
-</script>
 {% endblock %}

@@ -1,0 +1,2 @@
+Hi Grandee,
+You can upload all books into the data base by running upload2.py
