@@ -1,2 +1,4 @@
 Hi Grandee,
 You can upload all books into the data base by running upload2.py
+
+cd '.\Q2b)\' before running start.sh or start.ps1

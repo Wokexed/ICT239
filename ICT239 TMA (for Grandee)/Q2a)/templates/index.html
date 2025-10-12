@@ -2,37 +2,37 @@
 
 {% block title %}Book Titles - SG Library{% endblock %}
 
+{# ADD THIS BLOCK TO OVERRIDE THE PAGE TITLE IN THE BASE TEMPLATE HEADER #}
+{% block page_title %}
+BOOK TITLES
+{% endblock %}
+
 {% block content %}
 
-<!-- Filter and count header -->
 <div class="filter-header">
     <p>Number of titles: <span id="bookCount">{{ books|length }}</span></p>
     
-    <!-- Category Filter -->
     <form method="get" action="{{ url_for('index') }}" class="category-filter">
         <label for="categoryFilter" style="margin: 0;">Category:</label>
         <select id="categoryFilter" name="category" class="form-select">
             <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All</option>
             <option value="Children" {% if selected_category == 'Children' %}selected{% endif %}>Children</option>
             <option value="Teens" {% if selected_category == 'Teens' %}selected{% endif %}>Teens</option>
-            <option value="Adults" {% if selected_category == 'Adults' %}selected{% endif %}>Adults</option>
+            <option value="Adult" {% if selected_category == 'Adults' %}selected{% endif %}>Adults</option>
         </select>
         <button type="submit" class="btn btn-success">Search</button>
     </form>
 </div>
 
-<!-- Book Listings -->
 <div id="bookContainer">
     {% if books %}
         {% for book in books %}
         <div class="book-card" data-category="{{ book.category if book.category else 'Adult' }}">
-            <!-- Book Cover -->
             <img src="{{ book.cover_image if book.cover_image else 'https://via.placeholder.com/120x180?text=No+Cover' }}" 
-                 alt="{{ book.title }}" 
-                 class="book-cover"
-                 onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'">
+                    alt="{{ book.title }}" 
+                    class="book-cover"
+                    onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'">
             
-            <!-- Book Info -->
             <div class="book-info">
                 <div class="book-title">{{ book.title }}</div>
                 <div class="book-author">By {{ book.author if book.author else 'Unknown Author' }}</div>
@@ -55,13 +55,15 @@
                 </div>
                 
                 {% endif %}
-                                
+                
                 {% if book.pages %}
                 <div class="book-category">
                     <normal>Pages:</normal> {{ book.pages }}
                 </div>
                 {% endif %}
                 
+                {# NOTE: The description logic is still using the old, potentially non-standard, string methods. #}
+                {# It's highly recommended to use the list-based logic provided previously to prevent future errors. #}
                 <div class="book-description">
                     {% if book.description %}
                         
@@ -97,7 +99,6 @@
     {% endif %}
 </div>
 
-<!-- No Results Message (hidden by default) -->
 <div id="noResults" class="alert alert-warning" style="display: none;">
     No books found in the selected category.
 </div>

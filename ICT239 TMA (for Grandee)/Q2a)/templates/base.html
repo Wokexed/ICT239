@@ -392,8 +392,12 @@
 
             <ul class="sidebar-menu">
                 <li class="active">
-                    <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
-                    <span>Book Titles</span>
+                    <!-- Wrap the contents in an anchor tag pointing to the 'book_titles' route -->
+                    <a href="/book-titles" 
+                    style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="ID Card" class="icon-image">
+                        <span>Book Titles</span>
+                    </a>
                 </li>
             </ul>
         </div>  
@@ -401,8 +405,8 @@
         <!-- Main Content -->   
         <div class="main-content">
             <!-- Header -->
-            <div class="content-header">
-                <h1>{% block page_title %}BOOK TITLES{% endblock %}</h1>
+            <div class="content-header">    
+                <h1>{% block page_title %}HOME{% endblock %}</h1>
             </div>
         
             <!-- Page Content -->

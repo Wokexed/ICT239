@@ -56,8 +56,11 @@ def get_books_list():
     return books_list
 
 # Routes
-
 @app.route("/")
+def base():
+    return render_template("base.html")
+
+@app.route("/book-titles")
 def index():
     """Home page showing all book titles sorted alphabetically"""
     books = get_books_list()

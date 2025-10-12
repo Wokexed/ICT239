@@ -498,8 +498,10 @@
                 <!-- Unauthenticated User Sidebar -->
                 <ul class="sidebar-menu">
                     <li class="active">
-                        <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
-                        <span>Book Titles</span>
+                        <a href="/book-titles" class="sidebar-button">
+                            <img src="https://cdn-icons-png.flaticon.com/512/684/684833.png" alt="Book Titles" class="icon-image">
+                            <span>Book Titles</span>
+                        </a>
                     </li>
                     <li>
                         <a href="/login">
@@ -521,7 +523,7 @@
         <div class="main-content">
             <!-- Header -->
             <div class="content-header d-flex justify-content-between align-items-center">
-                <h1>{% block page_title %}BOOK TITLES{% endblock %}</h1>
+                <h1>{% block page_title %}HOME{% endblock %}</h1>
 
                 {% if current_user.is_authenticated %}
                 <form action="{{ url_for('logout') }}" method="post" class="ms-auto">

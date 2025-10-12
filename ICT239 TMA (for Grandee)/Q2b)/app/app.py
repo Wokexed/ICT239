@@ -57,9 +57,15 @@ from app.loan import Loan
 #     books = Book.objects.order_by('title')
 #     books_sorted = sorted(books, key=lambda x: x['title'])
 #     return render_template('index.html', books=books_sorted)
-
 @app.route("/")
+def base():
+    return render_template("base.html")
+
+@app.route("/book-titles")
 def index():
+    # Get category filter from query parameters
+    category_filter = request.args.get('category', 'All')
+    
     books_list = []
     for book in Book.objects.order_by('title'):
         
@@ -86,21 +92,25 @@ def index():
                     
                 authors_str = ', '.join(author_names)
         
-        # The authors_str variable is now finalized and scoped to the current book iteration.
-        books_list.append({
-            'id': str(book.id),
-            'title': book.title,
-            'author': authors_str, # Use the correctly determined string
-            'genre': ', '.join(book.genres) if book.genres else 'Unknown',
-            'category': book.category or 'Adult',
-            'pages': book.pages or 0,
-            'cover_image': book.url or '',
-            'description': '\n\n'.join(book.description) if book.description else '',
-            'copies_available': book.available or 0,
-            'total_copies': book.copies or 1
-        })
-    return render_template('index.html', books=books_list)
-
+        book_category = book.category or 'Adult'
+        
+        # Filter books based on category
+        if category_filter == 'All' or book_category == category_filter:
+            # The authors_str variable is now finalized and scoped to the current book iteration.
+            books_list.append({
+                'id': str(book.id),
+                'title': book.title,
+                'author': authors_str, # Use the correctly determined string
+                'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+                'category': book_category,
+                'pages': book.pages or 0,
+                'cover_image': book.url or '',
+                'description': '\n\n'.join(book.description) if book.description else '',
+                'copies_available': book.available or 0,
+                'total_copies': book.copies or 1
+            })
+    
+    return render_template('index.html', books=books_list, selected_category=category_filter)
 # @app.route("/")
 # def index():
 #     books_list = []
