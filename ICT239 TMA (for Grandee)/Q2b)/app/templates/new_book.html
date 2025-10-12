@@ -101,7 +101,7 @@
 
     .author-row {
         display: grid;
-        grid-template-columns: 1fr 150px 80px;
+        grid-template-columns: 1fr 150px auto; /* last column auto to fit button text */
         gap: 15px;
         align-items: center;
         margin-bottom: 12px;
@@ -295,6 +295,7 @@
         </div>
 
         <!-- Authors Section -->
+        
         <div class="form-section">
             <label>Authors:</label>
             <div>
@@ -312,10 +313,11 @@
                                     {% if form_data and i|string in form_data.author_illustrators %}checked{% endif %}>
                                 <label class="form-check-label" for="illustrator_{{ i }}">Illustrator</label>
                             </div>
+                            <!-- Always show add button -->
+                            <button type="submit" name="add_author" value="true" class="btn-add-author">+ Add Author</button>
+                            <!-- Show remove button only if more than 1 author -->
                             {% if author_count > 1 %}
                                 <button type="submit" name="remove_author" value="{{ i }}" class="btn-remove-author">Remove</button>
-                            {% else %}
-                                <button type="submit" name="add_author" value="true" class="btn-add-author">+ Add Author</button>
                             {% endif %}
                         </div>
                     {% endfor %}
