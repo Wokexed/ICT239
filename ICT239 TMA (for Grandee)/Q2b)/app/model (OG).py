@@ -8,10 +8,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class Author(db.EmbeddedDocument):
     name = db.StringField(required=True)
     is_illustrator = db.BooleanField(default=False)
-
+    
 class Book(db.Document):
     title = db.StringField(required=True)
-    authors = db.ListField(db.EmbeddedDocumentField(Author))
+    authors = db.ListField(db.StringField())
     genres = db.ListField(db.StringField())
     category = db.StringField()
     pages = db.IntField()
@@ -110,6 +110,8 @@ class User(db.Document, UserMixin):
             return user
         return None
     
+    
 @login_manager.user_loader
 def load_user(user_id):
     return User.get_user_by_id(user_id)
+    

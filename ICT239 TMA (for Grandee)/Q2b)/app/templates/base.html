@@ -441,7 +441,12 @@
                 <!-- Admin Sidebar -->
                 <ul class="sidebar-menu">
                     <li class="menu-section">
-                        <span class="section-title">Admin</span>
+                        <span class="section-title">
+                            <img src="{{ url_for('static', filename='img/admin-icon.png') }}" 
+                                alt="Admin Icon" 
+                                style="height: 32px; width: 32px; vertical-align: middle; margin-right: 6px;">
+                            Admin
+                        </span>
                     </li>
 
                     <hr>
@@ -516,10 +521,11 @@
 
                 {% if current_user.is_authenticated %}
                 <form action="{{ url_for('logout') }}" method="post" class="ms-auto">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                        Logout <img src="{{ url_for('static', filename='img/logout.png') }}" 
+                    <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer;">
+                        <img src="{{ url_for('static', filename='img/logout.png') }}" 
                             alt="Logout icon" 
-                            style="height: 1.5em; vertical-align: middle; margin-left: 8px;"> </button>
+                            style="height: 1.5em; vertical-align: middle;">
+                    </button>
                 </form>
                 {% endif %}
             </div>

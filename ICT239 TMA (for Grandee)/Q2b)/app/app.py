@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from app import app, db
-from app.model import Book, User, LoginForm, RegistrationForm
+from app.model import Book, User, LoginForm, RegistrationForm, Author
 from flask_login import login_user, logout_user, login_required, current_user
 
 # # Login required decorator
@@ -61,10 +61,35 @@ from flask_login import login_user, logout_user, login_required, current_user
 def index():
     books_list = []
     for book in Book.objects.order_by('title'):
+        
+        # Initialize authors_str for the current book
+        authors_str = 'Unknown Author' 
+
+        if book.authors:
+            # Check 1: If it looks like a list of Author objects (checking the first element)
+            if hasattr(book.authors[0], 'name'):
+                authors_str = ', '.join([author.name for author in book.authors])
+                
+            # Check 2: If it looks like a list of simple strings (legacy/fallback)
+            elif isinstance(book.authors[0], str):
+                authors_str = ', '.join(book.authors)
+                
+            # Check 3: Final attempt for complex objects that might use a different attribute or need str() conversion
+            else:
+                try:
+                    # Try to extract the name attribute if it's an object with a .name field
+                    author_names = [author.name for author in book.authors]
+                except AttributeError:
+                    # If .name fails, convert the object to a string as a last resort
+                    author_names = [str(author) for author in book.authors]
+                    
+                authors_str = ', '.join(author_names)
+        
+        # The authors_str variable is now finalized and scoped to the current book iteration.
         books_list.append({
             'id': str(book.id),
             'title': book.title,
-            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            'author': authors_str, # Use the correctly determined string
             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
             'category': book.category or 'Adult',
             'pages': book.pages or 0,
@@ -74,6 +99,23 @@ def index():
             'total_copies': book.copies or 1
         })
     return render_template('index.html', books=books_list)
+# @app.route("/")
+# def index():
+#     books_list = []
+#     for book in Book.objects.order_by('title'):
+#         books_list.append({
+#             'id': str(book.id),
+#             'title': book.title,
+#             'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+#             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+#             'category': book.category or 'Adult',
+#             'pages': book.pages or 0,
+#             'cover_image': book.url or '',
+#             'description': '\n\n'.join(book.description) if book.description else '',
+#             'copies_available': book.available or 1,
+#             'total_copies': book.copies or 1
+#         })
+#     return render_template('index.html', books=books_list)
 
 # @app.route('/book/<int:book_id>')
 # def book_details(book_id):
@@ -262,69 +304,145 @@ def logout():
 @login_required
 def add_book():
     if request.method == 'POST':
+        # Get form data for re-rendering
+        form_data = {
+            'genres': request.form.getlist('genres'),
+            'title': request.form.get('title', ''),
+            'category': request.form.get('category', ''),
+            'cover_url': request.form.get('cover_url', ''),
+            'description': request.form.get('description', ''),
+            'author_names': request.form.getlist('author_name'),
+            'author_illustrators': request.form.getlist('author_illustrator'),
+            'num_pages': request.form.get('num_pages', ''),
+            'num_copies': request.form.get('num_copies', '')
+        }
+        
+        # Handle adding an author row
         if request.form.get('add_author'):
-            # Just re-render with one more author row
-            return render_template('new_book.html')
+            form_data['author_names'].append('')
+            return render_template('new_book.html', form_data=form_data)
         
+        # Handle removing an author row
         if request.form.get('remove_author'):
-            # Just re-render without that author row
-            return render_template('new_book.html')
+            remove_index = int(request.form.get('remove_author'))
+            # Remove the author at the specified index
+            if remove_index < len(form_data['author_names']):
+                form_data['author_names'].pop(remove_index)
+                # Also remove from illustrators list if present
+                form_data['author_illustrators'] = [
+                    idx for idx in form_data['author_illustrators']
+                    if int(idx) != remove_index
+                ]
+            return render_template('new_book.html', form_data=form_data)
         
+        # Handle book submission
         if request.form.get('submit_book'):
-            # Process the book submission
-            genres = request.form.getlist('genres')
-            title = request.form.get('title')
-            category = request.form.get('category')
-            cover_url = request.form.get('cover_url')
-            description = request.form.get('description')
-            author_names = request.form.getlist('author_name')
-            author_illustrators = request.form.getlist('author_illustrator')
-            num_pages = request.form.get('num_pages')
-            num_copies = request.form.get('num_copies')
+            genres = form_data['genres']
+            title = form_data['title']
+            category = form_data['category']
+            cover_url = form_data['cover_url']
+            description = form_data['description']
+            author_names = form_data['author_names']
+            author_illustrators = form_data['author_illustrators']
+            num_pages = form_data['num_pages']
+            num_copies = form_data['num_copies']
             
             # Validate required fields
-            if not title or not category or not author_names or not author_names[0]:
-                flash('Please fill in all required fields.', 'danger')
-                return render_template('new_book.html')
+            if not title or not category:
+                flash('Title and category are required.', 'danger')
+                return render_template('new_book.html', form_data=form_data)
+            
+            if not any(author_names):  # Check if at least one author name exists
+                flash('At least one author is required.', 'danger')
+                return render_template('new_book.html', form_data=form_data)
             
             try:
-                # Create book in database
-                book = Book(title=title, category=category, description=description,
-                           cover_url=cover_url, num_pages=num_pages, num_copies=num_copies)
-                
-                # Add genres
-                for genre in genres:
-                    # Add genre to book (depends on your DB structure)
-                    pass
-                
-                # Add authors
+                # Create author objects
+                authors_list = []
                 for i, author_name in enumerate(author_names):
-                    if author_name:  # Only add non-empty authors
+                    if author_name.strip():  # Only add non-empty authors
                         is_illustrator = str(i) in author_illustrators
-                        # Create author relationship (depends on your DB structure)
-                        pass
+                        author = Author(name=author_name.strip(), is_illustrator=is_illustrator)
+                        authors_list.append(author)
                 
-                db.session.add(book)
-                db.session.commit()
+                # Convert description to list
+                description_list = [description] if description else []
+                
+                # Create book in database
+                book = Book(
+                    title=title,
+                    category=category,
+                    description=description_list,
+                    url=cover_url,
+                    pages=int(num_pages) if num_pages else None,
+                    copies=int(num_copies) if num_copies else 1,
+                    available=int(num_copies) if num_copies else 1,
+                    authors=authors_list,
+                    genres=genres
+                )
+                
+                book.save()
                 
                 flash(f'Book "{title}" added successfully!', 'success')
-                return redirect(url_for('new_book'))
+                # Redirect to books list or stay on add page
+                return redirect(url_for('add_book'))
+                
             except Exception as e:
-                db.session.rollback()
+                print(f"Error adding book: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 flash(f'Error adding book: {str(e)}', 'danger')
+                return render_template('new_book.html', form_data=form_data)
     
-    return render_template('new_book.html')
+    # Initial load - start with empty form_data
+    return render_template('new_book.html', form_data=None)
 
-@app.route('/admin/dashboard')
+# @app.route('/admin')
+# @login_required 
+# def admin_dashboard():
+#     # REPLICATE THE BOOK FETCHING LOGIC FROM YOUR INDEX ROUTE
+#     books_list = []
+#     for book in Book.objects.order_by('title'):
+#         books_list.append({
+#             'id': str(book.id),
+#             'title': book.title,
+#             'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+#             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
+#             'category': book.category or 'Adult',
+#             'pages': book.pages or 0,
+#             'cover_image': book.url or '',
+#             'description': '\n\n'.join(book.description) if book.description else '',
+#             'copies_available': book.available or 1,
+#             'total_copies': book.copies or 1
+#         })
+        
+#     return render_template('index.html', books=books_list)
+@app.route('/admin')
 @login_required 
 def admin_dashboard():
-    # REPLICATE THE BOOK FETCHING LOGIC FROM YOUR INDEX ROUTE
     books_list = []
     for book in Book.objects.order_by('title'):
+        
+        # --- FIX FOR AUTHOR OBJECTS ---
+        authors_str = 'Unknown Author'
+        if book.authors:
+            # Use a list comprehension to extract the display name attribute from each object.
+            # We will try '.name' first, as it's the standard for UserMixin/MongoEngine references.
+            try:
+                author_names = [author.name for author in book.authors]
+            except AttributeError:
+                # Fallback if the attribute is something else, like '.author_name' 
+                # or if it's already a simple list of strings.
+                author_names = [str(author) for author in book.authors]
+
+            # Join the collected names
+            authors_str = ', '.join(author_names)
+        
         books_list.append({
             'id': str(book.id),
             'title': book.title,
-            'author': ', '.join(book.authors) if book.authors else 'Unknown Author',
+            # Use the correctly formatted string
+            'author': authors_str, 
             'genre': ', '.join(book.genres) if book.genres else 'Unknown',
             'category': book.category or 'Adult',
             'pages': book.pages or 0,

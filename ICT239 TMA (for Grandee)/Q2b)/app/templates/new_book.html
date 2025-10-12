@@ -15,15 +15,32 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .form-section {
-        margin-bottom: 25px;
+    #description {
+        width: 100%;
+        height: 200px;
+        resize: vertical; /* allows user to resize vertically only */
     }
 
-    .form-section label {
-        display: block;
+    .form-section {
+        margin-bottom: 15px;
+    }
+
+    .form-section {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 20px;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .form-section:not(.authors-section) label {
+        padding-top: 10px;
+    }
+
+    .form-section:not(.authors-section) label {
         font-weight: 600;
-        margin-bottom: 8px;
         color: #333;
+        padding-top: 10px;
     }
 
     .form-section input[type="text"],
@@ -39,7 +56,11 @@
         font-family: Arial, sans-serif;
         box-sizing: border-box;
     }
-
+    .form-section select[multiple] {         
+        height: 80px;
+        overflow-y: auto;
+        background-color: #fff;
+    }
     .form-section textarea {
         resize: vertical;
         min-height: 120px;
@@ -144,8 +165,8 @@
     }
 
     .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 15px;
     }
 
@@ -161,6 +182,12 @@
         margin-top: 20px;
     }
 
+    .submit-container {
+        display: flex;                 /* enable flex layout */
+        justify-content: flex-end;     /* push button to the right */
+        margin-top: 20px;              /* spacing above button */
+    }
+    
     .submit-button:hover {
         background-color: #4cae4c;
     }
@@ -186,8 +213,16 @@
     }
 
     @media (max-width: 768px) {
+        .form-section {
+            grid-template-columns: 1fr;
+        }
+
         .author-row {
             grid-template-columns: 1fr;
+        }
+
+        .submit-button {
+            margin-left: 0;
         }
 
         .form-row {
@@ -211,26 +246,26 @@
     {% endwith %}
 
     <form method="POST" action="">
-        <!-- Genres Section -->
+<!-- Genres Section -->
         <div class="form-section">
-            <label>Choose multiple Genres:</label>
-            <div class="multi-select">
+            <label for="genres">Choose multiple Genres:</label>
+            <select id="genres" name="genres" multiple size="6">
                 {% set genres = ["Animals", "Business", "Comics", "Communication", "Dark Academia", "Emotion", "Fantasy", "Fiction", "Friendship", "Graphic Novels", "Grief", "Historical Fiction", "Indigenous", "Inspirational", "Magic", "Mental Health", "Nonfiction", "Personal Development", "Philosophy", "Picture Books", "Poetry", "Productivity", "Psychology", "Romance", "School", "Self Help"] %}
                 {% for genre in genres %}
-                    <label>
-                        <input type="checkbox" name="genres" value="{{ genre }}" 
-                            {% if request.method == 'POST' and genre in request.form.getlist('genres') %}checked{% endif %}>
+                    <option value="{{ genre }}"
+                        {% if form_data and genre in form_data.genres %}selected{% endif %}>
                         {{ genre }}
-                    </label>
+                    </option>
                 {% endfor %}
-            </div>
+            </select>
         </div>
+
 
         <!-- Title -->
         <div class="form-section">
             <label for="title">Title:</label>
             <input type="text" id="title" name="title" required
-                value="{{ request.form.get('title', '') }}">
+                value="{{ form_data.title if form_data else '' }}">
         </div>
 
         <!-- Category -->
@@ -238,51 +273,53 @@
             <label for="category">Choose a category:</label>
             <select id="category" name="category" required>
                 <option value="">-- Select a category --</option>
-                <option value="Children" {% if request.form.get('category') == 'Children' %}selected{% endif %}>Children</option>
-                <option value="Young Adult" {% if request.form.get('category') == 'Young Adult' %}selected{% endif %}>Young Adult</option>
-                <option value="Adult" {% if request.form.get('category') == 'Adult' %}selected{% endif %}>Adult</option>
-                <option value="Educational" {% if request.form.get('category') == 'Educational' %}selected{% endif %}>Educational</option>
-                <option value="Reference" {% if request.form.get('category') == 'Reference' %}selected{% endif %}>Reference</option>
+                <option value="Children" {% if form_data and form_data.category == 'Children' %}selected{% endif %}>Children</option>
+                <option value="Young Adult" {% if form_data and form_data.category == 'Young Adult' %}selected{% endif %}>Young Adult</option>
+                <option value="Adult" {% if form_data and form_data.category == 'Adult' %}selected{% endif %}>Adult</option>
+                <option value="Educational" {% if form_data and form_data.category == 'Educational' %}selected{% endif %}>Educational</option>
+                <option value="Reference" {% if form_data and form_data.category == 'Reference' %}selected{% endif %}>Reference</option>
             </select>
         </div>
 
         <!-- URL for Cover -->
         <div class="form-section">
             <label for="cover_url">URL for Cover:</label>
-            <input type="url" id="cover_url" name="cover_url" placeholder="https://example.com/cover.jpg"
-                value="{{ request.form.get('cover_url', '') }}">
+            <input type="url" id="cover_url" name="cover_url"
+                value="{{ form_data.cover_url if form_data else '' }}">
         </div>
 
         <!-- Description -->
         <div class="form-section">
             <label for="description">Description:</label>
-            <textarea id="description" name="description">{{ request.form.get('description', '') }}</textarea>
+            <textarea id="description" name="description">{{ form_data.description if form_data else '' }}</textarea>
         </div>
 
         <!-- Authors Section -->
         <div class="form-section">
             <label>Authors:</label>
-            <div class="author-instructions">
-                Add as many authors as needed. Use the "+ Add Author" button to add more, and "Remove" to delete an author row.
-            </div>
-            <div id="authors-container" class="authors-section">
-                {% set author_count = request.form.getlist('author_name')|length if request.form.getlist('author_name') else 1 %}
-                {% for i in range(author_count) %}
-                    <div class="author-row">
-                        <input type="text" name="author_name" placeholder="Author name" 
-                            value="{{ request.form.getlist('author_name')[i] if i < request.form.getlist('author_name')|length else '' }}">
-                        <div class="form-check">
-                            <input type="checkbox" id="illustrator_{{ i }}" name="author_illustrator" value="{{ i }}" class="form-check-input"
-                                {% if i|string in request.form.getlist('author_illustrator') %}checked{% endif %}
-                            <label class="form-check-label" for="illustrator_{{ i }}">Illustrator</label>
+            <div>
+                <div class="author-instructions">
+                    Add as many authors as needed. Use the "+ Add Author" button to add more, and "Remove" to delete an author row.
+                </div>
+                <div id="authors-container">
+                    {% set author_count = form_data.author_names|length if form_data and form_data.author_names else 1 %}
+                    {% for i in range(author_count) %}
+                        <div class="author-row">
+                            <input type="text" name="author_name"
+                                value="{{ form_data.author_names[i] if form_data and i < form_data.author_names|length else '' }}">
+                            <div class="form-check">
+                                <input type="checkbox" id="illustrator_{{ i }}" name="author_illustrator" value="{{ i }}" class="form-check-input"
+                                    {% if form_data and i|string in form_data.author_illustrators %}checked{% endif %}>
+                                <label class="form-check-label" for="illustrator_{{ i }}">Illustrator</label>
+                            </div>
+                            {% if author_count > 1 %}
+                                <button type="submit" name="remove_author" value="{{ i }}" class="btn-remove-author">Remove</button>
+                            {% else %}
+                                <button type="submit" name="add_author" value="true" class="btn-add-author">+ Add Author</button>
+                            {% endif %}
                         </div>
-                        {% if author_count > 1 %}
-                            <button type="submit" name="remove_author" value="{{ i }}" class="btn-remove-author">Remove</button>
-                        {% else %}
-                            <button type="submit" name="add_author" value="true" class="btn-add-author">+ Add</button>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
@@ -291,17 +328,19 @@
             <div class="form-section">
                 <label for="num_pages">Number of pages:</label>
                 <input type="number" id="num_pages" name="num_pages" min="1"
-                    value="{{ request.form.get('num_pages', '') }}">
+                    value="{{ form_data.num_pages if form_data else '' }}">
             </div>
             <div class="form-section">
                 <label for="num_copies">Number of copies:</label>
                 <input type="number" id="num_copies" name="num_copies" min="1"
-                    value="{{ request.form.get('num_copies', '') }}">
+                    value="{{ form_data.num_copies if form_data else '' }}">
             </div>
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" name="submit_book" value="true" class="submit-button">Submit</button>
+        <div class="submit-container">
+            <button type="submit" name="submit_book" value="true" class="submit-button">Submit</button>
+        </div>
     </form>
 </div>
-{% endblock %}  
+{% endblock %}
