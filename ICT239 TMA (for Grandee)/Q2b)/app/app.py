@@ -210,32 +210,21 @@ def register():
     if request.method == "GET":
         return render_template('register.html', form=form)
 
-    print("Form submitted!")
-
     if form.validate_on_submit():
-        print("Form validated!")
         name = form.name.data
         email = form.email.data
         password = form.password.data
         is_admin = form.is_admin.data if hasattr(form, "is_admin") else False
 
-        print(f"📝 Form data - Name: {name}, Email: {email}, Password length: {len(password)}")
-
         # Check if user already exists
-        print(f"🔍 About to check for existing user with email: {email}")
         existing_user = User.get_user_by_email(email)
-        print(f"🔍 Existing user result: {existing_user}")
-        print(f"🔍 Type of existing_user: {type(existing_user)}")
         
         if existing_user:
-            print("⚠️ User already exists! Redirecting...")
             flash('Email already registered.', 'danger')
             return redirect(url_for('register'))
 
         # ✅ Only create user if email doesn't exist
-        print("🚀 About to call User.create_user()...")
         new_user = User.create_user(name, email, password, is_admin)
-        print(f"🔍 create_user() returned: {new_user}")
 
         if new_user:
             flash('Registration successful! Please log in.', 'success')

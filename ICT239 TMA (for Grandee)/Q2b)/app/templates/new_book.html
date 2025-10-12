@@ -272,14 +272,14 @@
         <div class="form-section">
             <label for="category">Choose a category:</label>
             <select id="category" name="category" required>
-                <option value="">-- Select a category --</option>
-                <option value="Children" {% if form_data and form_data.category == 'Children' %}selected{% endif %}>Children</option>
+                <option value="Children" selected>Children</option>
                 <option value="Young Adult" {% if form_data and form_data.category == 'Young Adult' %}selected{% endif %}>Young Adult</option>
                 <option value="Adult" {% if form_data and form_data.category == 'Adult' %}selected{% endif %}>Adult</option>
                 <option value="Educational" {% if form_data and form_data.category == 'Educational' %}selected{% endif %}>Educational</option>
                 <option value="Reference" {% if form_data and form_data.category == 'Reference' %}selected{% endif %}>Reference</option>
             </select>
         </div>
+
 
         <!-- URL for Cover -->
         <div class="form-section">
