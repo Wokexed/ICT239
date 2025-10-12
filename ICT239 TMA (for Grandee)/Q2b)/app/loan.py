@@ -27,22 +27,15 @@ class Loan(db.Document):
         """
         Create a Loan document for a user.
         """
-        print("=" * 60)
-        print("🔍 CREATE_LOAN METHOD CALLED")
-        print(f"🔍 User type: {type(user)}, User: {user}")
-        print(f"🔍 Book type: {type(book)}, Book: {book}")
-        print(f"🔍 Borrow date: {borrow_date}")
-        print("=" * 60)
-        
         # Handle string IDs or objects
         if isinstance(user, str):
             from model import User
             user = User.get_user_by_id(user)
-            print(f"🔍 Converted user from string to object: {user}")
+            
         if isinstance(book, str):
             from model import Book
             book = Book.get_book_by_id(book)
-            print(f"🔍 Converted book from string to object: {book}")
+            
         
         # Validate inputs
         if not user:
@@ -52,18 +45,12 @@ class Loan(db.Document):
             print("❌ Book validation failed")
             return False, "Book not found.", None
         
-        print(f"✅ User validated: {user.name} (ID: {user.id})")
-        print(f"✅ Book validated: {book.title} (ID: {book.id})")
-        
         # Check if user already has an unreturned loan for this book title
         existing_loan = Loan.objects(
             member=user,
             book=book,
             returnDate=None
         ).first()
-        
-        print(f"🔍 Checking for existing unreturned loan...")
-        print(f"🔍 Existing loan found: {existing_loan}")
         
         if existing_loan:
             print(f"❌ User already has unreturned loan")
@@ -85,25 +72,14 @@ class Loan(db.Document):
                 borrowDate=borrow_date or datetime.now(),
                 renewCount=0
             )
-            print(f"✅ Loan object created: {loan}")
-            print(f"   - Member: {loan.member}")
-            print(f"   - Book: {loan.book}")
-            print(f"   - Borrow Date: {loan.borrowDate}")
-            print(f"   - Renew Count: {loan.renewCount}")
-            
-            print("🔍 Attempting to save loan to database...")
+           
             loan.save()
-            print(f"✅✅✅ LOAN SAVED SUCCESSFULLY! ID: {loan.id}")
+            
             
             # Update book's available count
-            print(f"🔍 Updating book availability from {book.available} to {book.available - 1}")
+        
             book.available -= 1
             book.save()
-            print(f"✅ Book availability updated successfully")
-            
-            print("=" * 60)
-            print(f"🎉 SUCCESS! Loan created with ID: {loan.id}")
-            print("=" * 60)
             
             return True, f"Successfully borrowed '{book.title}'.", loan
             
