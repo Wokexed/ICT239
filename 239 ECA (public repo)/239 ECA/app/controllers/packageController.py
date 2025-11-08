@@ -7,8 +7,7 @@ from models.users import User
 from models.package import Package
 
 # new imports
-from datetime import date, timedelta
-
+from app.models.bundle import Bundle
 
 package = Blueprint('packageController', __name__)
 
@@ -42,21 +41,28 @@ def packages():
                 
                 if single_package:
                     hotel_name = single_package.hotel_name
-                    total_cost = single_package.packageCost() 
+                    total_cost = single_package.packageCost()
                     new_message = f"No discount for bundle purchase for {hotel_name}.<br> Total costs: ${total_cost:.2f}"
-                    flash(new_message, "error")
+                    flash(new_message, "success")
+                    
+                    try:
+                        bundle = Bundle.purchaseBundle(str(current_user.id), [str(single_package.id)])
+                        flash("Bundle successfully purchased! You can view it in Manage Bundle.", "success")
+                    except Exception as e:
+                        flash(f"Error creating bundle: {str(e)}", "error")
 
             elif num_packages >= 2:
-                
                 total_cost = 0.0
                 hotel_names = []
+                package_ids = []
                 
                 for name_str in selected_packages:
                     package = Package.getPackage(name_str)
                     if package:
                         total_cost += package.packageCost()
                         hotel_names.append(package.hotel_name)
-                
+                        package_ids.append(str(package.id))
+
                 if 2 <= num_packages <= 3:
                     discount_rate = 0.10
                     discount_text = "10% discount"
@@ -67,7 +73,6 @@ def packages():
                     discount_multiplier = 0.80
                 
                 discounted_cost = total_cost * discount_multiplier
-                
                 names_list = ", ".join(hotel_names)
                 
                 new_message = (
@@ -77,6 +82,9 @@ def packages():
                 )
                 
                 flash(new_message, "success")
+
+                bundle = Bundle.purchaseBundle(str(current_user.id), package_ids)
+
 
     all_packages = Package.getAllPackages()
     return render_template('packages.html', panel="Package", all_packages=all_packages)

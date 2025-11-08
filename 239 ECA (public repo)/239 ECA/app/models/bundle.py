@@ -1,11 +1,14 @@
 from app import db
 from datetime import datetime
 
+class BundledPackage(db.EmbeddedDocument):
+    package = db.StringField(required=True)
+    utilised = db.BooleanField(default=False)
 
 class Bundle(db.Document):
-    meta = {'collection': 'bundles'}  # MongoDB collection name
+    meta = {'collection': 'bundles'} 
     purchased_date = db.DateTimeField(default=datetime.utcnow)
-    customer = db.StringField(required=True)  # Store customer ID as string
+    customer = db.StringField(required=True)
     bundledPackages = db.ListField(
         db.EmbeddedDocumentField('BundledPackage')
     )
@@ -14,7 +17,6 @@ class Bundle(db.Document):
     def purchaseBundle(customer_id, package_ids):
         embedded_packages = [BundledPackage(package=pkg_id) for pkg_id in package_ids]
 
-        # Create and save bundle document
         bundle = Bundle(customer=customer_id, bundledPackages=embedded_packages)
         bundle.save()
         return bundle
@@ -35,6 +37,3 @@ class Bundle(db.Document):
             return True
         return False
 
-class BundledPackage(db.EmbeddedDocument):
-    package = db.StringField(required=True)
-    utilised = db.BooleanField(default=False)
