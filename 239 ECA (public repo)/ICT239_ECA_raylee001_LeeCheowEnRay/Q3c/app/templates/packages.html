@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+<body>
+
+  {% block mainblock %}
+
+<form action="/packages" method="POST" id="bundleForm">
+  <div class="container-fluid mt-0 pt-0">
+    <div class="alert alert-info d-flex justify-content-between align-items-stretch mb-3 p-0" style="margin-top: 0;">
+      <div class="flex-grow-1 d-flex align-items-center ps-3">
+        Select 2 or more packages to buy as a bundle to qualify for discount.
+      </div>
+      <button type="submit" 
+              name="action" 
+              value="purchaseBundle"
+              class="btn btn-primary w-auto border-0 rounded-0" 
+              style="height: 100%; margin: 0;">
+        Purchase Bundle
+      </button>
+    </div>
+
+    <div class="row">
+      {% for package in all_packages %}
+      <div class="col-xl-4 col-md-6 col-sm-12 p-2">
+        <div class="card card-common h-100">
+          <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+            <img src="{{package.image_url}}" class="img-fluid" />
+            <a href="#!">
+              <div class="mask" style="background-color: rgba(251, 251, 251, 0.15);"></div>
+            </a>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">{{package.hotel_name}}</h5>
+            <p class="card-text">{{package.description}}</p>
+            <a href="/viewPackageDetail/{{package.hotel_name}}" class="btn btn-primary">Details</a>
+            <a href="/view?hotel_name='{{package.hotel_name}}'" class="btn btn-primary">Book</a>
+            <input type="checkbox" name="selected_packages" value="{{package.hotel_name}}" 
+              id="package_{{loop.index}}" 
+              class="large-checkbox">
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div> <!-- end row -->
+  </div> <!-- end container -->
+</form>
+
+
+  {% endblock %}
