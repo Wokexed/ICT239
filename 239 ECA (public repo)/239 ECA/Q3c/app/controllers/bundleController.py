@@ -7,6 +7,8 @@ from models.package import Package
 from models.book import Booking
 from bson import ObjectId
 
+from flask import jsonify  
+
 bundle = Blueprint('bundleController', __name__)
 
 @bundle.route('/manageBundle')
