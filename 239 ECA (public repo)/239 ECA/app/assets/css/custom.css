@@ -143,4 +143,14 @@ tr {
     transform: translateY(-1px);
 }
 
+.large-checkbox {
+    /* Add some space between the 'Book' button and the box */
+    margin-left: 10px; 
+    
+    /* Scale it up by 1.5 times its original size. Adjust '1.5' as needed. */
+    transform: scale(2.5); 
+    
+    /* Important: Must use this for the scaling to affect its layout position slightly better */
+    display: inline-block; 
+}
 /* end of cards */
