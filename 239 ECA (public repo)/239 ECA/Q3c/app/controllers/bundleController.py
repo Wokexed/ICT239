@@ -64,34 +64,29 @@ def manageBundle():
     return render_template('manageBundle.html', panel='Manage Bundles', bundles=bundles_with_packages)
 
 
-@bundle.route('/bookFromBundle', methods=['POST'])
+@bundle.route('/api/bookFromBundle', methods=['POST'])
 @login_required
-def bookFromBundle():
+def apiBookFromBundle():
+    """API endpoint for SPA - returns JSON instead of redirect"""
     if current_user.is_admin:
-        flash("This is a non-admin function. Please log in as a non-admin user to use this function.", "error")
-        return redirect(url_for('packageController.packages'))
+        return {'success': False, 'message': 'This is a non-admin function.'}, 403
     
-    bundle_id = request.form.get('bundle_id')
-    package_id = request.form.get('package_id')
-    check_in_date = request.form.get('check_in_date')
+    data = request.get_json()
+    bundle_id = data.get('bundle_id')
+    package_id = data.get('package_id')
+    check_in_date = data.get('check_in_date')
     
     if not all([bundle_id, package_id, check_in_date]):
-        flash("Missing required information for booking.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'Missing required information.'}, 400
     
-    # Get the package
     package = Package.objects(id=package_id).first()
     if not package:
-        flash("Package not found.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'Package not found.'}, 404
     
-    # Verify the bundle belongs to the current user
     bundle = Bundle.objects(id=bundle_id, customer=str(current_user.id)).first()
     if not bundle:
-        flash("Bundle not found or does not belong to you.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'Bundle not found or does not belong to you.'}, 404
     
-    # Check if the package is already utilised
     bundled_package = None
     for bp in bundle.bundledPackages:
         if bp.package == package_id:
@@ -99,27 +94,17 @@ def bookFromBundle():
             break
     
     if not bundled_package:
-        flash("Package not found in this bundle.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'Package not found in this bundle.'}, 404
     
     if bundled_package.utilised:
-        flash("This package has already been utilised.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'This package has already been utilised.'}, 400
     
-    # Check if bundle is expired (more than 1 year old)
     if (datetime.utcnow() - bundle.purchased_date).days > 365:
-        flash("This bundle has expired. Packages must be booked within one year of purchase.", "error")
-        return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': 'This bundle has expired.'}, 400
     
-    # Create the booking
     try:
         booking = Booking.createBooking(check_in_date, current_user, package)
-        
-        # Mark the package as utilised in the bundle
         Bundle.markPackageUtilised(bundle_id, package_id)
-        
-        flash(f"Successfully booked {package.hotel_name} for {check_in_date}!", "success")
+        return {'success': True, 'message': f'Successfully booked {package.hotel_name}!'}
     except Exception as e:
-        flash(f"Error creating booking: {str(e)}", "error")
-    
-    return redirect(url_for('bundleController.manageBundle'))
+        return {'success': False, 'message': f'Error: {str(e)}'}, 500

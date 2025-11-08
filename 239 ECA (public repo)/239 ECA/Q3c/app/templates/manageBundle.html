@@ -86,13 +86,17 @@
 
         {% if not pkg_info.utilised and not pkg_info.is_expired %}
         <div style="margin-top: 10px;">
-          <form method="POST" action="/bookFromBundle">
-            <input type="hidden" value="{{ bundle_data.bundle_id }}" name="bundle_id">
-            <input type="hidden" value="{{ pkg_info.package.id }}" name="package_id">
-            <span><strong>Check-in Date</strong></span>
-            <input type="date" name="check_in_date" required style="padding: 3px; margin-left: 5px; margin-right: 10px;">
-            <button type="submit" class="btn btn-primary btn-sm">Book</button>
+          <form class="booking-form" data-bundle-id="{{ bundle_data.bundle_id }}" 
+                data-package-id="{{ pkg_info.package.id }}">
+              <span><strong>Check-in Date</strong></span>
+              <input type="date" name="check_in_date" required 
+                    style="padding: 3px; margin-left: 5px; margin-right: 10px;">
+              <button type="submit" class="btn btn-primary btn-sm">Book</button>
           </form>
+
+          <!-- Message area for this package -->
+          <div class="message-area" id="msg-{{ pkg_info.package.id }}" 
+              style="margin-top: 10px; display: none;"></div>
         </div>
         {% endif %}
       </div>
@@ -101,6 +105,63 @@
     {% endfor %}
   {% endfor %}
   {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.booking-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent traditional form submission
+            
+            const bundleId = this.dataset.bundleId;
+            const packageId = this.dataset.packageId;
+            const checkInDate = this.querySelector('[name="check_in_date"]').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const messageArea = document.getElementById('msg-' + packageId);
+            
+            // Disable button during request
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Booking...';
+            
+            try {
+                const response = await fetch('/api/bookFromBundle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        bundle_id: bundleId,
+                        package_id: packageId,
+                        check_in_date: checkInDate
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Show message
+                messageArea.style.display = 'block';
+                messageArea.className = 'message-area alert ' + 
+                    (result.success ? 'alert-success' : 'alert-danger');
+                messageArea.textContent = result.message;
+                
+                if (result.success) {
+                    // Update UI to show package as utilised
+                    const packageRow = this.closest('div[style*="display: table"]');
+                    const utilisedDiv = packageRow.querySelector('div:nth-child(4) > div:nth-child(2)');
+                    utilisedDiv.innerHTML = '<strong>Utilised:</strong> Yes';
+                    this.remove(); // Remove booking form
+                }
+            } catch (error) {
+                messageArea.style.display = 'block';
+                messageArea.className = 'message-area alert alert-danger';
+                messageArea.textContent = 'Error: ' + error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Book';
+            }
+        });
+    });
+});
+</script>
 
   {% endblock %}
 </body>
